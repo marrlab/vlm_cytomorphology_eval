@@ -1,0 +1,144 @@
+import requests
+import torch
+from PIL import Image
+from transformers import MllamaForConditionalGeneration, AutoProcessor
+
+def load_llama_model(vlm_name='llama-3.2-multimodal-11B'):
+    if vlm_name == 'llama-3.2-multimodal-11B':
+        model_path = "/lustre/groups/labs/marr/qscd01/workspace/llama_multimodal_models/llama-3.2-multimodal-11B/llama-3.2-11B-model"
+        processor_path = "/lustre/groups/labs/marr/qscd01/workspace/llama_multimodal_models/llama-3.2-multimodal-11B/llama-3.2-11B-processor"
+
+    elif vlm_name == 'llama-3.2-multimodal-90B':
+        model_path = "/lustre/groups/labs/marr/qscd01/workspace/llama_multimodal_models/llama-3.2-multimodal-90B/llama-3.2-90B-model"
+        processor_path = "/lustre/groups/labs/marr/qscd01/workspace/llama_multimodal_models/llama-3.2-multimodal-90B/llama-3.2-90B-processor"
+    else:
+        raise ValueError(f"Model {vlm_name} not supported")
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    model = MllamaForConditionalGeneration.from_pretrained(
+        model_path,
+        torch_dtype=torch.bfloat16,
+        device_map="auto"
+    )
+
+    model.tie_weights()
+
+    processor = AutoProcessor.from_pretrained(processor_path)
+
+
+    return model, processor
+
+
+def llama_api_visual_inquiry(image_path, prompt_text, vlm_name='llama-3.2-multimodal-11B', **kwargs):
+
+    model = kwargs.get('model')
+    processor = kwargs.get('processor')
+    max_new_tokens = kwargs.get('max_new_tokens', 10000)  # Default to 10000 if not provided
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    image = Image.open(image_path)
+
+    messages = [
+        {"role": "user", "content": [
+            {"type": "image"},
+            {"type": "text", "text": prompt_text}
+        ]}
+    ]
+    input_text = processor.apply_chat_template(messages, add_generation_prompt=True)
+    inputs = processor(
+        image,
+        input_text,
+        add_special_tokens=False,
+        return_tensors="pt"
+    ).to(model.device)
+
+    output = model.generate(**inputs, max_new_tokens=max_new_tokens)
+    answer = processor.decode(output[0])
+
+    # full_output = processor.decode(output)
+
+    # print(full_output)
+
+    usage = 0 
+
+    return answer, usage
+
+
+def llama_api_text_inquiry(prompt_text, vlm_name='llama-3.2-multimodal-11B', **kwargs):
+    
+    
+    # model = kwargs.get('model')
+    # processor = kwargs.get('processor')
+    # max_new_tokens = kwargs.get('max_new_tokens', 10000)  # Default to 10000 if not provided
+
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    # image_path = '/lustre/groups/aih/ivan.kukuljan/VLMevaluation/Datasets/white_image_400x400.png'
+
+    # image = Image.open(image_path)
+
+    # messages = [
+    #     {"role": "user", "content": [
+    #         {"type": "image"},
+    #         {"type": "text", "text": prompt_text}
+    #     ]}
+    # ]
+    # input_text = processor.apply_chat_template(messages, add_generation_prompt=True)
+    # inputs = processor(
+    #     image,
+    #     input_text,
+    #     add_special_tokens=False,
+    #     return_tensors="pt"
+    # ).to(model.device)
+
+    # output = model.generate(**inputs, max_new_tokens=max_new_tokens)
+    # answer = processor.decode(output[0])
+
+    # # full_output = processor.decode(output)
+
+    # # print(full_output)
+
+    # usage = 0 
+
+    # return answer, usage
+    
+    
+    model = kwargs.get('model')
+    processor = kwargs.get('processor')
+    max_new_tokens = kwargs.get('max_new_tokens', 10000)  # Default to 10000 if not provided
+    
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    messages = [
+        {"role": "user", "content": [
+            {"type": "text", "text": prompt_text}
+        ]}
+    ]
+    input_text = processor.apply_chat_template(messages, add_generation_prompt=True)
+    inputs = processor(
+        None,
+        input_text,
+        add_special_tokens=False,
+        return_tensors="pt"
+    ).to(model.device)
+    
+    # inputs = processor(
+    #     input_text,
+    #     add_special_tokens=False,
+    #     return_tensors="pt"
+    # ).to(model.device)
+
+
+    output = model.generate(**inputs, max_new_tokens=max_new_tokens) 
+
+    answer = processor.decode(output[0])
+
+    # full_output = processor.decode(output)
+
+    # print(full_output)
+
+    usage = 0 
+
+    return answer, usage

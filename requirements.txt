@@ -1,0 +1,11 @@
+matplotlib==3.10.0
+numpy==2.2.1
+openai==1.59.4
+pandas==2.2.3
+Pillow==11.1.0
+protobuf==5.29.2
+Requests==2.32.3
+torch==2.5.1
+transformers==4.47.0
+google-generativeai==0.8.3
+openpyx==3.1.5

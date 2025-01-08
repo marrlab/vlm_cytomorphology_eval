@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Dec 13 16:50:09 2024
+
+@author: ivan
+"""
+
+
+import base64
+from openai import OpenAI
+# import os
+# import time
+# import pandas as pd
+
+client = OpenAI()
+
+# Function to encode the image
+def encode_image(image_path):
+  with open(image_path, "rb") as image_file:
+    return base64.b64encode(image_file.read()).decode('utf-8')
+
+
+def gpt_api_visual_inquiry(image_path, prompt_text, vlm_name='gpt-4o', **kwargs):
+    # Getting the base64 string
+    base64_image = encode_image(image_path)
+    
+    # Set default detail if not provided in kwargs
+    detail = kwargs.get('detail', 'low')
+    
+    response = client.chat.completions.create(
+      model=vlm_name, #"gpt-4o-mini"
+      messages=[
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": prompt_text,
+            },
+            {
+              "type": "image_url",
+              "image_url": {
+                "url":  f"data:image/jpeg;base64,{base64_image}",
+                "detail": detail
+              },
+            },
+          ],
+        }
+      ],
+    )
+    
+    answer=response.choices[0].message.content
+    
+    
+    # Extract and print token usage
+    usage = response.usage.total_tokens
+    
+    return answer, usage
+
+
+def gpt_api_text_inquiry(prompt_text, vlm_name='gpt-4o', **kwargs):
+    response = client.chat.completions.create(
+        model=vlm_name, #"o1-preview",
+        messages=[
+            {
+                "role": "user", 
+                "content": prompt_text
+            }
+        ]
+    )
+
+    answer=response.choices[0].message.content
+    
+    
+    # Extract and print token usage
+    usage = response.usage.total_tokens
+    
+    return answer, usage
