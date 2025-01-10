@@ -117,7 +117,6 @@ def get_dataset_info(dataset_name):
         if cluster_local == 'cluster':
             original_full_dataset_path = '/lustre/groups/labs/marr/qscd01/datasets/191024_AML_Matek/AML-Cytomorphology_LMU'
             dataset_csv_path = '/lustre/groups/labs/marr/qscd01/datasets/191024_AML_Matek/annotations.dat'
-
         elif cluster_local == 'local':#
             original_full_dataset_path = None
             dataset_csv_path = '/home/ivan/Helmholtz/Furkan/Data/AML_Matek.dat'
@@ -138,7 +137,6 @@ def get_dataset_info(dataset_name):
         if cluster_local == 'cluster':
             original_full_dataset_path = '' # /lustre/groups/shared/histology_data/hematology_data/BM_cytomorphology_data/            
             dataset_csv_path = '/lustre/groups/shared/histology_data/hematology_data/BM_cytomorphology_data/bm_train.csv'
-
         elif cluster_local == 'local':
             original_full_dataset_path = None
             dataset_csv_path = '/home/ivan/Helmholtz/VLMevaluation/Datasets/Bone_marrow_cyto.csv'
@@ -158,7 +156,6 @@ def get_dataset_info(dataset_name):
         if cluster_local == 'cluster':
             original_full_dataset_path = "/lustre/groups/labs/marr/qscd01/datasets/Acevedo_20"            
             dataset_csv_path = "/lustre/groups/labs/marr/qscd01/datasets/241211_WBCAtt/WBCAtt_morphology_annotations_train.csv"
-
         elif cluster_local == 'local':
             original_full_dataset_path = '/home/ivan/Helmholtz/Furkan/Data/Acevedo_20/'
             dataset_csv_path = '/home/ivan/Helmholtz/Furkan/Data/WBCAtt/WBCAtt_morphology_annotations_train.csv'
