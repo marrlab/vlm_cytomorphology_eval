@@ -2,7 +2,9 @@
 
 This is a repository for automated evaluation of VLM models on cytology tasks and datasets.
 
-**Important: If you are working on the code, inform everyone in the project, what you intend to change. Ask for permission to change the logic of the code or the folder structure and naming conventions.**
+**Important: Read the entire README before you start working on the project, using and modifying the code!**
+
+**If you are developing the code, inform the whole project group in Slack, what you intend to change. Ask Ivan for permission to change the logic of the code or the folder structure and naming conventions.**
 
 **If you have any questions, ask Ivan or someone else in the project team.**
 
