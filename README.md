@@ -8,6 +8,10 @@ This is a repository for automated evaluation of VLM models on cytology tasks an
 
 **If you have any questions, ask Ivan or someone else in the project team.**
 
+**Our project directory on the cluster is <<you know where>>/qscd01/projects/cytology_vlm_eval**
+If you work on the cluster, use this directory. If you work locally, copy the datasets from this folder on the cluster to your computer first. If you are generating a new data set, make sure that you generate it on the cluster or that you copy it from your local machine after generating it. This will ensure that we are all working with the same randomly sampled subsets of data sets and that we are collecting all the results in the same folder with same naming convention.
+
+
 ## Contents
 
 - dataset_info_and_paths.py: contains functions that return paths to datasets, results folders, etc. This file defines the entire folder structure of the project and naming conventions. All the file names have to be defined here in order to avoid conflicts. In other files, you are not allowed to define any names - you are only allowed to call get_..._path functions from here.
