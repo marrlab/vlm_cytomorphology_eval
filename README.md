@@ -54,6 +54,14 @@ If by chance any of the requirements are missing in the file, add them please an
 
 Run the API call for a dataset, task and model by running run_api_inquiry.py and parsing the arguments.
 
+**Important: Before running the comercial VLMs, you will need to register and get an API key.**
+Before running run_api_inquiry.py in the terminal, you'll need to export the API keys. For example:
+```
+export GEMINI_API_KEY = 'your_gemini_api_key'
+export OPENAI_API_KEY = 'your_openai_api_key'
+```
+Don't share your key with anyone unless you would like them to burn your money. :) 
+
 ### Reporting results
 
 To compute and plot confusion mattrices for all the models and datasets run plot_conf_mat.py. This also collects all the results and plots reports. 
