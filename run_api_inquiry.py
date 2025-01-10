@@ -14,6 +14,31 @@ import time
 import pandas as pd
 
 
+def import_model(vlm_name):
+    if 'gpt' in vlm_name:
+        from vlm_models.gpt_api import gpt_api_visual_inquiry, gpt_api_text_inquiry
+        kwargs = {'detail': 'low'}
+        api_visual_inquiry = gpt_api_visual_inquiry
+        api_text_inquiry = gpt_api_text_inquiry
+        sleep_time=1
+    elif 'gemini' in vlm_name:
+        from vlm_models.gemini_api import gemini_api_visual_inquiry, gemini_api_text_inquiry
+        kwargs = {}
+        api_visual_inquiry = gemini_api_visual_inquiry
+        api_text_inquiry = gemini_api_text_inquiry
+        sleep_time=1
+    elif 'llama' in vlm_name:
+        from vlm_models.llama_api import load_llama_model, llama_api_visual_inquiry, llama_api_text_inquiry
+        model, processor = load_llama_model(vlm_name)
+        kwargs = {'model': model, 'processor': processor, 'max_new_tokens': 20000}
+        api_visual_inquiry = llama_api_visual_inquiry
+        api_text_inquiry = llama_api_text_inquiry
+        sleep_time=0.2
+    else:
+        raise ValueError(f"Model {vlm_name} not found")
+        return None, None, None, None
+
+    return api_visual_inquiry, api_text_inquiry, kwargs, sleep_time
 
 
 def run_api_0shot_classification(vlm_name, dataset_name):
@@ -30,31 +55,15 @@ def run_api_0shot_classification(vlm_name, dataset_name):
             - total_tokens_used_df (pd.DataFrame): DataFrame with image names and token usage for each category
     """
 
+    api_visual_inquiry, api_text_inquiry, kwargs, sleep_time = import_model(vlm_name) 
+
     dataset_info = get_dataset_info(dataset_name)
 
     vlm_eval_subset_folder_path = dataset_info['vlm_eval_subset_folder_path']
 
     prompt = get_prompt(dataset_name, '0shot_classification', reviewed=False)
 
-    categories = list(prompt.keys())
-
-    if 'gpt' in vlm_name:
-        from vlm_models.gpt_api import gpt_api_visual_inquiry
-        kwargs = {'detail': 'low'}
-        api_visual_inquiry = gpt_api_visual_inquiry
-        sleep_time=1
-    elif 'gemini' in vlm_name:
-        from vlm_models.gemini_api import gemini_api_visual_inquiry
-        kwargs = {}
-        api_visual_inquiry = gemini_api_visual_inquiry
-        sleep_time=1
-    elif 'llama' in vlm_name:
-        from vlm_models.llama_api import load_llama_model, llama_api_visual_inquiry
-        model, processor = load_llama_model(vlm_name)
-        kwargs = {'model': model, 'processor': processor, 'max_new_tokens': 10000}
-        api_visual_inquiry = llama_api_visual_inquiry
-        sleep_time=0.2
-
+    categories = [col for col in list(prompt.keys()) if col != 'image_name']   
  
     # Get list of image files
     # Extract number from image name if it exists, otherwise use the full name
@@ -130,26 +139,7 @@ def run_api_review(vlm_name: str, dataset_name: str, task_type: str, **kwargs):
 
     review_model = get_review_model(vlm_name)
     
-    # Get folder path based on cluster/local setting
-    # dataset_info = get_dataset_info(dataset_name, structured_yes_no)
-    # vlm_eval_subset_folder_path = dataset_info['vlm_eval_subset_folder_path']
-
-    if 'gpt' in review_model:
-        from vlm_models.gpt_api import gpt_api_text_inquiry
-        kwargs = {}
-        api_text_inquiry = gpt_api_text_inquiry
-        sleep_time=1
-    elif 'gemini' in review_model:
-        from vlm_models.gemini_api import gemini_api_text_inquiry
-        kwargs = {}
-        api_text_inquiry = gemini_api_text_inquiry
-        sleep_time=1
-    elif 'llama' in review_model:
-        from vlm_models.llama_api import load_llama_model, llama_api_text_inquiry  
-        model, processor = load_llama_model(review_model)
-        kwargs = {'model': model, 'processor': processor, 'max_new_tokens': 20000}
-        api_text_inquiry = llama_api_text_inquiry
-        sleep_time=0.2
+    api_visual_inquiry, api_text_inquiry, kwargs, sleep_time = import_model(review_model)  
 
     # Get prompt dictionary for review
     prompt = get_prompt(dataset_name, task_type, reviewed=True)
@@ -214,6 +204,11 @@ def run_api_review(vlm_name: str, dataset_name: str, task_type: str, **kwargs):
     
     return reviewed_answers_df, total_tokens_used_review_df
 
+# dataset_name = 'AML_Matek'
+# vlm_name = 'gpt-4o' # 'blabla'
+# task_type = '0shot_classification'
+# # run_api_review(vlm_name, dataset_name, task_type)
+# run_api_0shot_classification(vlm_name, dataset_name)
 
 if __name__ == "__main__":
     import argparse
