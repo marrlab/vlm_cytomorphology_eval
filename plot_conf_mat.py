@@ -2,28 +2,23 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-from dataset_info_and_paths import get_dataset_info, get_result_path, get_conf_mat_path, get_score_metrics_paths, get_conf_mat_plot_path, get_score_metrics_report_path
+from dataset_info_and_paths import get_global_info, get_dataset_info, get_result_path, get_conf_mat_path, get_score_metrics_paths, get_score_metrics_report_path
 
-def compute_confusion_matrix(vlm_name, dataset_name, reviewed_yes_no, compute_confmat_from_scratch=True):
+def compute_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, compute_confmat_from_scratch=True):
     """
     Compute confusion matrix comparing ground truth and predicted labels.
     
     Args:
         vlm_name (str): Name of the vision language model
         dataset_name (str): Name of the dataset
-        reviewed_yes_no (str): Compute based on reviewed results or not ('yes', 'no')
+        task_type (str): Type of task (see get_global_info()['available_task_types'])
+        reviewed (bool): Whether to compute based on reviewed results or not
         compute_confmat_from_scratch (bool): Compute the confusion matrix from scratch or not (default: False)
     Returns:
         pd.DataFrame: Confusion matrix as a dataframe
     """
-    structured_nonstructured = 'structured'
-
-    if reviewed_yes_no == 'yes':
-        structured_nonstructured_review = 'review'
-    elif reviewed_yes_no == 'no':
-        structured_nonstructured_review = 'structured'
-        
-    output_path = get_conf_mat_path(vlm_name, dataset_name, reviewed_yes_no, csv_xlsc_none=None)
+    
+    output_path = get_conf_mat_path(vlm_name, dataset_name, task_type, reviewed, file_type_extension=None)['conf_mat_path']
     
     if (os.path.exists(output_path+'.csv')) and (not compute_confmat_from_scratch):
         print(f"Confusion matrix already exists at {output_path}. Skipping computation.")
@@ -38,7 +33,7 @@ def compute_confusion_matrix(vlm_name, dataset_name, reviewed_yes_no, compute_co
     
         ground_truth_df_path = dataset_info['vlm_eval_subset_labels_path']
         ground_truth_columns = dataset_info['ground_truth_columns_conf_mat']
-        predicted_df_path = get_result_path(vlm_name, dataset_name, structured_nonstructured_review, 'answers', csv_xlsc_none='csv')
+        predicted_df_path = get_result_path(vlm_name, dataset_name, task_type, reviewed, file_type_extension='csv')['answers_path']
         predicted_columns = dataset_info['predicted_columns_conf_mat']
         labels_dict_path = dataset_info['abbreviation_dict_path']
         
@@ -151,21 +146,22 @@ def compute_confusion_matrix(vlm_name, dataset_name, reviewed_yes_no, compute_co
                 
         return conf_matrix
 
-def compute_score_metrics(vlm_name, dataset_name, reviewed_yes_no, compute_confmat_from_scratch, save_overall_metrics=True):
+def compute_score_metrics(vlm_name, dataset_name, task_type, reviewed, compute_confmat_from_scratch, save_overall_metrics=True):
     """
     Compute score metrics based on confusion matrix.
     
     Args:
         vlm_name (str): Name of the VLM model
         dataset_name (str): Name of the dataset
-        reviewed_yes_no (bool): Whether to use reviewed yes/no answers
+        task_type (str): Type of task (see get_global_info()['available_task_types'])
+        reviewed (bool): Whether to use reviewed yes/no answers
         save_overall_metrics (bool, optional): Whether to save overall metrics for model comparison. Defaults to True.
         compute_confmat_from_scratch (bool, optional): Whether to recompute confusion matrix. Defaults to False.
         
     Returns:
         dict: Dictionary containing various score metrics computed from the confusion matrix
     """
-    conf_matrix = compute_confusion_matrix(vlm_name, dataset_name, reviewed_yes_no, compute_confmat_from_scratch)
+    conf_matrix = compute_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, compute_confmat_from_scratch)
 
     # Calculate metrics for each class
     per_class_metrics = {}
@@ -212,7 +208,7 @@ def compute_score_metrics(vlm_name, dataset_name, reviewed_yes_no, compute_confm
     }
 
     if save_overall_metrics:
-        score_metrics_paths = get_score_metrics_paths(reviewed_yes_no, csv_xlsc_none=None)
+        score_metrics_paths = get_score_metrics_paths(task_type, reviewed, file_type_extension=None)
 
         precision_score_path = score_metrics_paths['precision_score_path']
         # Check if precision scores file exists
@@ -265,23 +261,23 @@ def compute_score_metrics(vlm_name, dataset_name, reviewed_yes_no, compute_confm
     return metrics
 
 
-def report_score_metrics(reviewed_yes_no, save_format_pdf_png='png'):
+def report_score_metrics(task_type, reviewed, file_type_extension='png'):
     """
     Create a report of all score metrics across VLMs and datasets.
     
     Args:
-        reviewed_yes_no (str): Whether to use reviewed results ('yes') or not ('no')
-        save_format_pdf_png (str): Format to save the plot in ('pdf' or 'png')
+        reviewed (bool): Whether to use reviewed results ('yes') or not ('no')
+        file_type_extension (str): Format to save the plot in ('pdf', 'png')
     """
     # Get paths to all score metric files
-    score_metrics_paths = get_score_metrics_paths(reviewed_yes_no)
+    score_metrics_paths = get_score_metrics_paths(task_type, reviewed)
     
     # Create figure and axis
     fig, ax = plt.subplots(figsize=(13, 7))
     ax.axis('off')
     
     # Add overall title
-    plt.suptitle('Performance Metrics Across Models and Datasets (for ' + ('reviewed' if reviewed_yes_no == 'yes' else 'non-reviewed') + ' answers)', fontsize=14, y=0.98)
+    plt.suptitle('Performance Metrics Across Models and Datasets for the' + task_type + ' task (for ' + ('reviewed' if reviewed == 'yes' else 'non-reviewed') + ' answers)', fontsize=14, y=0.98)
     
     # Initialize y position for tables
     y_pos = 1.0
@@ -347,7 +343,7 @@ def report_score_metrics(reviewed_yes_no, save_format_pdf_png='png'):
     plt.tight_layout()
     
 
-    score_metrics_report_path = get_score_metrics_report_path(reviewed_yes_no, save_format_pdf_png)
+    score_metrics_report_path = get_score_metrics_report_path(task_type, reviewed, file_type_extension)
     
     # Save the figure
     plt.savefig(score_metrics_report_path, bbox_inches='tight', dpi=300)
@@ -355,23 +351,25 @@ def report_score_metrics(reviewed_yes_no, save_format_pdf_png='png'):
 
 
 
-def plot_confusion_matrix(vlm_name, dataset_name, reviewed_yes_no, compute_confmat_from_scratch=True, save_format_pdf_png='png'):
+def plot_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, compute_confmat_from_scratch=True, file_type_extension='png'):
     """
     Plot confusion matrix and performance metrics.
     
     Args:
         vlm_name (str): Name of the vision language model
         dataset_name (str): Name of the dataset
-        reviewed_yes_no (str): Plot based on reviewed results or not ('yes', 'no')
+        task_type (str): Type of task (see get_global_info()['available_task_types'])
+        reviewed (bool): Whether to plot based on reviewed results or not
         compute_confmat_from_scratch (bool): Compute the confusion matrix from scratch or not (default: True)
+        file_type_extension (str): Format to save the plot in ('pdf', 'png')
     """
     # Font size parameter for all text elements
     font_size = 20
     
     # Compute confusion matrix
-    conf_matrix = compute_confusion_matrix(vlm_name, dataset_name, reviewed_yes_no, compute_confmat_from_scratch=compute_confmat_from_scratch)
+    conf_matrix = compute_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, compute_confmat_from_scratch=compute_confmat_from_scratch)
 
-    metrics = compute_score_metrics(vlm_name, dataset_name, reviewed_yes_no, compute_confmat_from_scratch=compute_confmat_from_scratch, save_overall_metrics=True)
+    metrics = compute_score_metrics(vlm_name, dataset_name, task_type, reviewed, compute_confmat_from_scratch=compute_confmat_from_scratch, save_overall_metrics=True)
     
 
     # Create figure with three subplots
@@ -386,7 +384,7 @@ def plot_confusion_matrix(vlm_name, dataset_name, reviewed_yes_no, compute_confm
                                        gridspec_kw={'width_ratios': [conf_mat_ratio, 0.5, 1]})
     
     # Convert raw counts to percentages
-    conf_matrix_pct = conf_matrix.copy()
+    conf_matrix_pct = conf_matrix.astype(float).copy()
     for idx in conf_matrix.index:
         row_sum = conf_matrix.loc[idx].sum()
         if row_sum > 0:
@@ -462,50 +460,33 @@ def plot_confusion_matrix(vlm_name, dataset_name, reviewed_yes_no, compute_confm
     ax3.set_title('Performance Metrics (%)', pad=20, fontsize=font_size)
 
     # Extract filename without extension for plot title
-    if reviewed_yes_no == 'yes':    
+    if reviewed:    
         reviewed_yes_no_str = 'reviewed'
-    elif reviewed_yes_no == 'no':
+    elif not reviewed:
         reviewed_yes_no_str = 'not reviewed'
 
-    plot_title = 'Confusion matrix and performance metrics for ' + dataset_name + ' dataset' + ' with ' + vlm_name + ' model' + ' (' + reviewed_yes_no_str + ')'
+    plot_title = 'Confusion matrix and performance metrics for ' + dataset_name + ' dataset' + ' for the ' + task_type + ' task' + ' with ' + vlm_name + ' model' + ' (' + reviewed_yes_no_str + ')'
     fig.suptitle(plot_title, y=1.05, fontsize=font_size+2, fontweight='bold')
     
     # Adjust layout and save plot
     plt.tight_layout()
-    conf_mat_plot_path = get_conf_mat_plot_path(vlm_name, dataset_name, reviewed_yes_no, save_format_pdf_png=save_format_pdf_png) 
+    conf_mat_plot_path = get_conf_mat_path(vlm_name, dataset_name, task_type, reviewed, file_type_extension=file_type_extension)['conf_mat_plot_path'] 
     plt.savefig(conf_mat_plot_path, bbox_inches='tight')
     plt.close()
 
 
-compute_confmat_from_scratch = True
-for dataset_name in ['AML_Matek', 'Bone_Marrow_Cyto', 'WBCAtt']:
-# dataset_name = 'WBCAtt'
-    for vlm_name in ['gpt-4o', 'gemini-2.0-flash-exp', 'llama-3.2-multimodal-11B']:
-        for reviewed_yes_no in ['yes','no']:
-            # compute_confusion_matrix(vlm_name, dataset_name, reviewed_yes_no, compute_confmat_from_scratch=compute_confmat_from_scratch)
-            #compute_score_metrics(vlm_name, dataset_name, reviewed_yes_no, compute_confmat_from_scratch=compute_confmat_from_scratch, save_overall_metrics=True)
-            plot_confusion_matrix(vlm_name, dataset_name, reviewed_yes_no, compute_confmat_from_scratch=compute_confmat_from_scratch)
+if __name__ == '__main__':
+    compute_confmat_from_scratch = True
+    global_info = get_global_info()
+    for dataset_name in global_info['available_datasets']:
+        for vlm_family in global_info['available_model_families']:
+            vlm_name = global_info['recommended_models'][vlm_family]
+            for task_type in [t for t in global_info['available_task_types'] if t != 'nonstructured']:
+                for reviewed in [True, False]:
+                    plot_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, compute_confmat_from_scratch=compute_confmat_from_scratch)
 
-for reviewed_yes_no in ['yes','no']:
-    report_score_metrics(reviewed_yes_no, save_format_pdf_png='png')
-
-# Example usage for AML Matek dataset
-# vlm_name = 'llama-3.2-multimodal-11B' #'gpt-4o'
-# dataset_name = 'AML_Matek'
-# compute_confmat_from_scratch = True
-
-# for reviewed_yes_no in ['yes', 'no']:
-#     plot_confusion_matrix(vlm_name, dataset_name, reviewed_yes_no, compute_confmat_from_scratch)
-
-# # Example usage for Bone Marrow Cyto dataset 
-# vlm_name = 'llama-3.2-multimodal-11B' #'gpt-4o'
-# dataset_name = 'Bone_Marrow_Cyto'
-# reviewed_yes_no = 'no'
-# compute_confmat_from_scratch = True
-
-# for reviewed_yes_no in ['yes', 'no']:
-#     plot_confusion_matrix(vlm_name, dataset_name, reviewed_yes_no, compute_confmat_from_scratch)
-
-
+    for task_type in [t for t in global_info['available_task_types'] if t != 'nonstructured']:
+        for reviewed in [True, False]:
+            report_score_metrics(task_type, reviewed, file_type_extension='png')
 
 

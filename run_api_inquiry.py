@@ -6,7 +6,7 @@ Created on Fri Dec 13 17:29:35 2024
 @author: ivan
 """
 
-from dataset_info_and_paths import get_dataset_info, get_result_path, get_review_model
+from dataset_info_and_paths import get_dataset_info, get_result_path, get_review_model, get_global_info 
 from prompts import get_prompt
 import re
 import os
@@ -15,14 +15,14 @@ import pandas as pd
 
 
 
-def run_api_inquiry(vlm_name, dataset_name, structured_nonstructured):
+
+def run_api_0shot_classification(vlm_name, dataset_name):
     """
     Run visual language model API inquiries on a dataset of images.
     
     Args:
-        vlm_name (str): Name of the visual language model to use (e.g. 'gpt-o', 'gemini')
-        dataset_name (str): Name of the dataset to evaluate ('AML_Matek', 'Bone_Marrow_Cyto', 'WBCAtt') 
-        structured_nonstructured (str): Whether to use structured or nonstructured prompts ('structured', 'nonstructured')
+        vlm_name (str): Name of the visual language model to use (see get_global_info()['recommended_models'])
+        dataset_name (str): Name of the dataset to evaluate (see get_global_info()['available_datasets'])
         
     Returns:
         tuple: A tuple containing:
@@ -30,14 +30,11 @@ def run_api_inquiry(vlm_name, dataset_name, structured_nonstructured):
             - total_tokens_used_df (pd.DataFrame): DataFrame with image names and token usage for each category
     """
 
-    structured_nonstructured_review = structured_nonstructured
-        
-
     dataset_info = get_dataset_info(dataset_name)
 
     vlm_eval_subset_folder_path = dataset_info['vlm_eval_subset_folder_path']
 
-    prompt = get_prompt(dataset_name, structured_nonstructured_review)
+    prompt = get_prompt(dataset_name, '0shot_classification', reviewed=False)
 
     categories = list(prompt.keys())
 
@@ -74,8 +71,8 @@ def run_api_inquiry(vlm_name, dataset_name, structured_nonstructured):
     answers_df = pd.DataFrame(columns=['image_name', *categories])
     total_tokens_used_df = pd.DataFrame(columns=['image_name', *categories])
     
-    answers_path_base = get_result_path(vlm_name, dataset_name, structured_nonstructured, 'answers', None)
-    usage_path_base = get_result_path(vlm_name, dataset_name, structured_nonstructured, 'total_tokens_used', None)
+    answers_path_base = get_result_path(vlm_name, dataset_name, '0shot_classification', reviewed=False, file_type_extension=None)['answers_path']
+    usage_path_base = get_result_path(vlm_name, dataset_name, '0shot_classification', reviewed=False, file_type_extension=None)['tokens_path']
 
     # Process each image
     for j, category in enumerate(categories):
@@ -117,22 +114,19 @@ def run_api_inquiry(vlm_name, dataset_name, structured_nonstructured):
     
     return answers_df, total_tokens_used_df
 
-def run_api_review(vlm_name: str, dataset_name: str, **kwargs):
+def run_api_review(vlm_name: str, dataset_name: str, task_type: str, **kwargs):
     """
     Run API review on previously generated answers.
     
     Args:
         vlm_name (str): Name of the VLM model that was used to generate the answers
-        dataset_name (str): Name of the dataset to evaluate
+        dataset_name (str): Name of the dataset to evaluate (see get_global_info()['available_datasets'])
+        task_type (str): Type of task (see get_global_info()['available_task_types'])
         **kwargs: Additional arguments to pass to api_visual_inquiry
         
     Returns:
         tuple: (reviewed_answers_df, total_tokens_used_review_df) containing the reviewed answers and token usage
     """
-
-
-    # structured_yes_no = 'yes'
-    structured_nonstructured = 'structured'
 
     review_model = get_review_model(vlm_name)
     
@@ -158,10 +152,10 @@ def run_api_review(vlm_name: str, dataset_name: str, **kwargs):
         sleep_time=0.2
 
     # Get prompt dictionary for review
-    prompt = get_prompt(dataset_name, 'review')
+    prompt = get_prompt(dataset_name, task_type, reviewed=True)
     
     # Load original answers
-    answers_path = get_result_path(vlm_name, dataset_name, structured_nonstructured, 'answers', 'csv')
+    answers_path = get_result_path(vlm_name, dataset_name, task_type, reviewed=False, file_type_extension='csv')['answers_path']
     original_answers_df = pd.read_csv(answers_path)
     
     # Create dataframes to store results
@@ -171,8 +165,8 @@ def run_api_review(vlm_name: str, dataset_name: str, **kwargs):
     # Get categories from prompt dictionary
     categories = [col for col in list(prompt.keys()) if col != 'image_name']
     
-    answers_path_base = get_result_path(vlm_name, dataset_name, 'reviewed', 'answers', None)
-    usage_path_base = get_result_path(vlm_name, dataset_name, 'reviewed', 'total_tokens_used', None)
+    answers_path_base = get_result_path(vlm_name, dataset_name, task_type, reviewed=True, file_type_extension='csv')['answers_path']
+    usage_path_base = get_result_path(vlm_name, dataset_name, task_type, reviewed=True, file_type_extension='csv')['tokens_path']
 
     # Process each image
     for j, category in enumerate(categories):
@@ -225,20 +219,21 @@ if __name__ == "__main__":
     import argparse
     
     parser = argparse.ArgumentParser(description='Run VLM model evaluation on cytomorphology datasets')
-    parser.add_argument('--vlm_name', type=str, choices=['gpt-4o', 'gemini-2.0-flash-exp', 'llama-3.2-multimodal-11B'],
+    parser.add_argument('--vlm_name', type=str, choices=get_global_info()['recommended_models'],
                       help='Name of VLM model to use.')
-    parser.add_argument('--dataset_name', type=str, choices=['AML_Matek', 'Bone_Marrow_Cyto', 'WBCAtt'],
+    parser.add_argument('--dataset_name', type=str, choices=get_global_info()['available_datasets'],
                       help='Name of dataset to evaluate.')
-    parser.add_argument('--structured_nonstructured', type=str, choices=['structured', 'nonstructured'],
-                      help='Whether to use structured or nonstructured prompts')
+    parser.add_argument('--task_type', type=str, choices=get_global_info()['available_task_types'],
+                      help='Type of task to evaluate.')
     parser.add_argument('--run_review', action='store_true',
                       help='Whether to also run review after inquiry')
 
     args = parser.parse_args()
-    
-    # Run the API inquiry
-    run_api_inquiry(args.vlm_name, args.dataset_name, args.structured_nonstructured)
-    
+
+    if args.task_type == '0shot_classification':
+        # Run the API inquiry
+        run_api_0shot_classification(args.vlm_name, args.dataset_name)
+        
     # Optionally run review
     if args.run_review:
-        run_api_review(args.vlm_name, args.dataset_name)
+        run_api_review(args.vlm_name, args.dataset_name, args.task_type)

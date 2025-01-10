@@ -29,17 +29,26 @@ def sample_data_subset(
     another parameter output_folder_names and uncommenting suitable lines in the code.
     """
 
-    dataset_info = get_dataset_info(dataset_name)
+    dataset_info = get_dataset_info(dataset_name)   
 
+    vlm_eval_subset_labels_path = dataset_info['vlm_eval_subset_labels_path']
+
+    if os.path.exists(vlm_eval_subset_labels_path ):
+        print(f"Warning: Sampled subset of the dataset {dataset_name} already exists (found labels file at {vlm_eval_subset_labels_path})!")
+        print("Skipping subset preparation to avoid overwriting existing data. If you still want to create a new dataset, you must:\n - first get the permission from all the collaborators in the project\n - then manually delete the existing images and labels\n - then run the code again.")
+        return 
+
+    vlm_eval_subset_labels_path = vlm_eval_subset_labels_path.replace('.csv', '').replace('.xlsx', '')
     original_full_dataset_path = dataset_info['original_full_dataset_path']
     dataset_csv_path = dataset_info['dataset_csv_path']
-    vlm_eval_subset_folder_path = dataset_info['vlm_eval_subset_folder_path']
-    vlm_eval_subset_labels_path = dataset_info['vlm_eval_subset_labels_path'].replace('.csv', '')
+    vlm_eval_subset_folder_path = dataset_info['vlm_eval_subset_folder_path']    
     paths_column_in_csv = dataset_info['paths_column_in_csv']
     sorting_label_column_in_csv = dataset_info['sorting_label_column_in_csv']
     which_classes = dataset_info['which_classes']
     column_labels_to_keep = dataset_info['column_labels_to_keep']
 
+    # Check if labels path exists
+    
 
     # Load the labels file
     # Determine file format and load accordingly

@@ -25,20 +25,21 @@ def get_all_classes(dataset_CSV_path: str):
     return 0
 
 
-def get_prompt(dataset_name: str, structured_nonstructured_review: str):
+def get_prompt(dataset_name: str, task_type: str, reviewed=False):
     """
     Get the appropriate prompt text for a given dataset and structure type.
     
     Args:
         dataset_name (str): Name of the dataset to get prompt for (e.g. 'AML_Matek', 'Bone_Marrow_Cyto', 'WBCAtt')
-        structured_nonstructured_review (str): Whether to return structured, unstructured, or review prompt ('structured', 'nonstructured', or 'review')
+        task_type (str): Which task to get prompt for (see get_global_info()['available_task_types'])
+        reviewed (bool): If we are using a chatbot to review previous answers of a chatbot to this task
     
     Returns:
         dict: Dictionary containing prompt text for the specified dataset. 
         Dictionary keys refer to the column names in the dataset, and the values are the prompts for the respective columns.
     """
 
-    prompt_AML_Matek_structured = {
+    prompt_AML_Matek_0shot_classification = {
         "cell_type": """Consider the input image. Take a moment to think. Consider what features do the cells in the image have. Which of the white blood cell types listed below is shown? 
     Write just the cell type and nothing else. Choose one of the possible labels provided below (exactly as written here):
     BAS Basophil
@@ -58,7 +59,7 @@ def get_prompt(dataset_name: str, structured_nonstructured_review: str):
     PMO Promyelocyte"""
     }
 
-    prompt_AML_Matek_structured_review = {
+    prompt_AML_Matek_0shot_classification_review = {
         "cell_type": """Which of the classes listed below does the chatbot's answer regarding the cell type belong to? Write just the label (exacly as written below) and nothing else:
     NA (Chatbot is unsure/ambiguious/doesn't know/no answer provided/class cannot be determined)
     BAS Basophil
@@ -80,7 +81,7 @@ def get_prompt(dataset_name: str, structured_nonstructured_review: str):
         
     prompt_AML_Matek_nonstructured = {'cell_type': 'Consider the input image. Take a moment to think. Consider what features do the cells in the image have. Which type of white blood cell is shown? Write just the cell type and nothing else.'}
 
-    prompt_Bone_Marrow_Cyto_structured = {'cell_type': """Consider the input image. Take a moment to think. Consider what features do the cells in the image have. Which of the white blood cell types listed below is shown? 
+    prompt_Bone_Marrow_Cyto_0shot_classification = {'cell_type': """Consider the input image. Take a moment to think. Consider what features do the cells in the image have. Which of the white blood cell types listed below is shown? 
     Write your full considerations but conclude your reply with 'Answer: ' and then write one of the possible labels provided below (exactly as written here):
     ABE 	Abnormal eosinophil
     ART 	Artefact
@@ -103,7 +104,7 @@ def get_prompt(dataset_name: str, structured_nonstructured_review: str):
     PLM 	Plasma cell
     PMO 	Promyelocyte"""}
 
-    prompt_Bone_Marrow_Cyto_structured_review = {'cell_type': """Consider only the chatbot's answer and ignore any potentially attached images. Which of the classes listed below does the chatbot's answer regarding the cell type belong to? Write just the label (exacly as written below) and nothing else:
+    prompt_Bone_Marrow_Cyto_0shot_classification_review = {'cell_type': """Consider only the chatbot's answer and ignore any potentially attached images. Which of the classes listed below does the chatbot's answer regarding the cell type belong to? Write just the label (exacly as written below) and nothing else:
     NA (Chatbot is unsure/ambiguious/doesn't know/no answer provided/class cannot be determined)
     ABE 	Abnormal eosinophil
     ART 	Artefact
@@ -128,7 +129,7 @@ def get_prompt(dataset_name: str, structured_nonstructured_review: str):
 
     prompt_Bone_Marrow_Cyto_nonstructured = {'cell_type': 'Consider the input image. Take a moment to think. Consider what features do the cells in the image have. Which of the white blood cell types listed below is shown? Write just the cell type and nothing else.'}
 
-    prompt_WBCAtt_structured = {'label': """Consider the input image. Take a moment to think. Consider what features do the cells in the image have. Which of the white blood cell types listed below is shown? Write just the cell type and nothing else. Choose one of the possible labels provided below (exactly as written here):
+    prompt_WBCAtt_0shot_classification = {'label': """Consider the input image. Take a moment to think. Consider what features do the cells in the image have. Which of the white blood cell types listed below is shown? Write just the cell type and nothing else. Choose one of the possible labels provided below (exactly as written here):
     Neutrophil
     Eosinophil
     Basophil
@@ -191,7 +192,7 @@ def get_prompt(dataset_name: str, structured_nonstructured_review: str):
     }
 
 
-    prompt_WBCAtt_structured_review = {'label': """Consider only the chatbot's answer and ignore any potentially attached images. Which of the classes listed below does the chatbot's answer regarding the cell type belong to? Write just the label (exacly as written below) and nothing else:
+    prompt_WBCAtt_0shot_classification_review = {'label': """Consider only the chatbot's answer and ignore any potentially attached images. Which of the classes listed below does the chatbot's answer regarding the cell type belong to? Write just the label (exacly as written below) and nothing else:
     NA (Chatbot is unsure/ambiguious/doesn't know/no answer provided/class cannot be determined)
     Neutrophil
     Eosinophil
@@ -266,33 +267,37 @@ def get_prompt(dataset_name: str, structured_nonstructured_review: str):
     }
 
     if dataset_name == 'AML_Matek':
-        if structured_nonstructured_review == 'structured':
-            return prompt_AML_Matek_structured
-        elif structured_nonstructured_review == 'nonstructured':
+        if task_type == '0shot_classification':
+            if reviewed==False:
+                return prompt_AML_Matek_0shot_classification
+            elif reviewed==True:
+                return prompt_AML_Matek_0shot_classification_review
+        elif task_type == 'nonstructured':
             return prompt_AML_Matek_nonstructured
-        elif structured_nonstructured_review == 'review':
-            return prompt_AML_Matek_structured_review
+
 
     elif dataset_name == 'Bone_Marrow_Cyto':
-        if structured_nonstructured_review == 'structured':
-            return prompt_Bone_Marrow_Cyto_structured
-        elif structured_nonstructured_review == 'nonstructured':
+        if task_type == '0shot_classification':
+            if reviewed==False:
+                return prompt_Bone_Marrow_Cyto_0shot_classification
+            elif reviewed==True:
+                return prompt_Bone_Marrow_Cyto_0shot_classification_review
+        elif task_type == 'nonstructured':
             return prompt_Bone_Marrow_Cyto_nonstructured
-        elif structured_nonstructured_review == 'review':
-            return prompt_Bone_Marrow_Cyto_structured_review
 
     elif dataset_name == 'WBCAtt':
-        if structured_nonstructured_review == 'structured':
-            return prompt_WBCAtt_structured
-        elif structured_nonstructured_review == 'nonstructured':
+        if task_type == '0shot_classification':
+            if reviewed==False:
+                return prompt_WBCAtt_0shot_classification
+            elif reviewed==True:
+                return prompt_WBCAtt_0shot_classification_review
+        elif task_type == 'nonstructured':
             return None
-        elif structured_nonstructured_review == 'review':
-            return prompt_WBCAtt_structured_review
 
 
 # dataset_name='WBCAtt'
-# structured_nonstructured_review='review'
-# prompt_dict=get_prompt(dataset_name, structured_nonstructured_review)
+# task_type='review'
+# prompt_dict=get_prompt(dataset_name, task_type)
 
 # print(prompt_dict)
 
