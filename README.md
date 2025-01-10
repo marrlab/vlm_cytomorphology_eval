@@ -117,9 +117,13 @@ See gpt_api.py for an example.
 ### Adding a new task
 
 1. Add the task name to the available_task_types list in the get_global_info function in dataset_info_and_paths.py
+
 2. Add the prompts for the task type for all datasets and for both reviewed and unreviewed cases to the prompts.py file.
+
 3. Write the function run_api_task_type for the task in run_api_inquiry.py.
+
 4. Add potential new task-specific functions to the model files in the vlm_models folder.
+
 5. Add potential new task-specific functions to the import_model function in the run_api_inquiry.py file.
 
 
