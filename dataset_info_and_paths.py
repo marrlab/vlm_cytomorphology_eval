@@ -129,6 +129,7 @@ def get_dataset_info(dataset_name):
         column_labels_to_keep=[sorting_label_column_in_csv] # Which label columns from csv to include in the vlm_dataset csv
         ground_truth_columns_conf_mat = ['1']        
         predicted_columns_conf_mat = ['cell_type']
+        dataset_to_avoid_overlap_with = None
 
 
     elif dataset_name == 'Bone_Marrow_Cyto':
@@ -149,7 +150,7 @@ def get_dataset_info(dataset_name):
         column_labels_to_keep=[sorting_label_column_in_csv]
         ground_truth_columns_conf_mat = ['Label']
         predicted_columns_conf_mat = ['cell_type']
-
+        dataset_to_avoid_overlap_with = None
     elif dataset_name == 'WBCAtt':
         published_dataset_location = 'https://www.sciencedirect.com/science/article/pii/S2352340920303681#ec-research-data'
         published_annotations_location = 'https://github.com/apple2373/wbcatt'
@@ -192,7 +193,7 @@ def get_dataset_info(dataset_name):
         # ['label', 'cell_size', 'cell_shape', 'nucleus_shape', 'nuclear_cytoplasmic_ratio', 'chromatin_density', 'cytoplasm_vacuole', 'cytoplasm_texture', 'cytoplasm_colour', 'granule_type', 'granule_colour', 'granularity']        
         predicted_columns_conf_mat = ground_truth_columns_conf_mat   
         #['label', 'cell_size', 'cell_shape', 'nucleus_shape', 'nuclear_cytoplasmic_ratio', 'chromatin_density', 'cytoplasm_vacuole', 'cytoplasm_texture', 'cytoplasm_colour', 'granule_type', 'granule_colour', 'granularity']        
-
+        dataset_to_avoid_overlap_with = None
  
     
     dataset_info = {'dataset_name': dataset_name,
@@ -210,7 +211,8 @@ def get_dataset_info(dataset_name):
                     'which_classes': which_classes,
                     'column_labels_to_keep': column_labels_to_keep,
                     'ground_truth_columns_conf_mat': ground_truth_columns_conf_mat,
-                    'predicted_columns_conf_mat': predicted_columns_conf_mat}    
+                    'predicted_columns_conf_mat': predicted_columns_conf_mat,
+                    'dataset_to_avoid_overlap_with': dataset_to_avoid_overlap_with}    
     return dataset_info
 
 

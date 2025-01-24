@@ -18,20 +18,23 @@ from dataset_info_and_paths import get_dataset_info
 def sample_data_subset(
     dataset_name: str,
     n_per_label: int,
+    dataset_avoid_overlap: str = None
 ):
     """Creates a subset by sampling equally from each class.
 
     Args:
         dataset_name (str): Name of the dataset to create subset from
         n_per_label (int): Number of images per class to include in subset
-    
+
     The code can be easily modified to create multiple nonoverlapping subsets of the dataset by introducing
-    another parameter output_folder_names and uncommenting suitable lines in the code.
+    another parameter output_folder_names and uncommenting suitable lines in the code. If dataset_to_avoid_overlap_with
+    is not None, the code will avoid overlap with the dataset_to_avoid_overlap_with dataset.
     """
 
     dataset_info = get_dataset_info(dataset_name)   
 
     vlm_eval_subset_labels_path = dataset_info['vlm_eval_subset_labels_path']
+
 
     if os.path.exists(vlm_eval_subset_labels_path ):
         print(f"Warning: Sampled subset of the dataset {dataset_name} already exists (found labels file at {vlm_eval_subset_labels_path})!")
@@ -46,6 +49,18 @@ def sample_data_subset(
     sorting_label_column_in_csv = dataset_info['sorting_label_column_in_csv']
     which_classes = dataset_info['which_classes']
     column_labels_to_keep = dataset_info['column_labels_to_keep']
+    dataset_to_avoid_overlap_with = dataset_info['dataset_to_avoid_overlap_with']
+
+
+    if dataset_to_avoid_overlap_with is not None:
+        dataset_to_avoid_overlap_with_info = get_dataset_info(dataset_to_avoid_overlap_with)
+        dataset_to_avoid_overlap_with_labels_path = dataset_to_avoid_overlap_with_info['vlm_eval_subset_labels_path']
+
+        if not os.path.exists(dataset_to_avoid_overlap_with_labels_path ):
+            raise ValueError(f"Dataset to avoid overlap with {dataset_to_avoid_overlap_with} labels not found at {dataset_to_avoid_overlap_with_labels_path}. Run prepare_dataset.py for this dataset first.")
+
+        dataset_to_avoid_overlap_with_labels_df = pd.read_csv(dataset_to_avoid_overlap_with_labels_path)
+
 
     # Check if labels path exists
     
@@ -65,6 +80,9 @@ def sample_data_subset(
         labels_df = pd.read_csv(dataset_csv_path, sep='\s+', header=None)  # Assumes space/tab delimited
     else:
         raise ValueError(f"Unsupported file format: {file_extension}")
+
+    if dataset_to_avoid_overlap_with is not None:
+        labels_df = labels_df[~labels_df[paths_column_in_csv].isin(dataset_to_avoid_overlap_with_labels_df['original_image_path'])]
     
     no_folders = 1 # len(output_folder_names) # Uncomment if you want create multiple nonoverlapping subsets
     
@@ -81,13 +99,15 @@ def sample_data_subset(
     
     # Create a dictionary to hold dataframes for each folder
     folder_dfs = {folder_name: pd.DataFrame(columns=["original_image_path"] + column_labels_to_keep) for folder_name in output_folder_names}
-    
+
     # Iterate through each current_class
     for class_idx, current_class in enumerate(which_classes):
         print(f"Processing current_class: {current_class} - current_class {class_idx+1}/{len(which_classes)}")
 
         # Filter the dataframe for the current current_class
         df_class = labels_df[labels_df[sorting_label_column_in_csv] == current_class]
+
+        
         
         # Shuffle the dataframe
         df_class = df_class.sample(frac=1, random_state=42).reset_index(drop=True)
