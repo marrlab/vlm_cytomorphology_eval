@@ -94,12 +94,14 @@ def get_dataset_info(dataset_name):
             - results_folder_path (str): Path to save results folder            
             - plots_folder_path (str): Path to save plots folder  
             - paths_column_in_csv (str or int): Column name in the dataset CSV that contains image paths
+            - n_samples_per_label (int): Number of images per class to include in subset
             - sorting_label_column_in_csv (str or int): Column name in the dataset CSV w.r.t. which the dataset will be equally drawn (for example cell types)
             - which_classes (str): Which values of sorting_label_column_in_csv  to include in the dataset (e.g. 'all')
             - column_labels_to_keep (list): Which label columns from csv to include in the vlm_dataset csv
             - ground_truth_columns_conf_mat (list): Columns to use as ground truth in confusion matrix
             - predicted_columns_conf_mat (list): Columns to use as predictions in confusion matrix
-            
+            - dataset_to_avoid_overlap_with (str): Name of the dataset to avoid overlap with
+            - associated_train_dataset_name (str): Name of the associated train dataset for finetuning the models  
     """
     cluster_local = get_global_info()['cluster_local']
 
@@ -123,6 +125,7 @@ def get_dataset_info(dataset_name):
 
         abbreviation_dict_path = os.path.join(vlm_eval_subset_folder_path, f'{dataset_name}_abbreviation_dictionary.csv')
         
+        n_samples_per_label = 50
         paths_column_in_csv = 0
         sorting_label_column_in_csv = 1
         which_classes = 'all' # Which classes to include in the dataset (for example in this case all cell types)
@@ -130,6 +133,7 @@ def get_dataset_info(dataset_name):
         ground_truth_columns_conf_mat = ['1']        
         predicted_columns_conf_mat = ['cell_type']
         dataset_to_avoid_overlap_with = None
+        associated_train_dataset_name = None
 
 
     elif dataset_name == 'Bone_Marrow_Cyto':
@@ -144,6 +148,7 @@ def get_dataset_info(dataset_name):
 
         abbreviation_dict_path = os.path.join(vlm_eval_subset_folder_path, f'{dataset_name}_abbreviation_dictionary.csv')
         
+        n_samples_per_label = 50
         paths_column_in_csv = 'Image Path'
         sorting_label_column_in_csv = 'Label'
         which_classes = 'all' # Which labels to include in the dataset (for example in this case all cell types)
@@ -151,6 +156,29 @@ def get_dataset_info(dataset_name):
         ground_truth_columns_conf_mat = ['Label']
         predicted_columns_conf_mat = ['cell_type']
         dataset_to_avoid_overlap_with = None
+        associated_train_dataset_name = 'Bone_Marrow_Cyto_train'
+    elif dataset_name == 'Bone_Marrow_Cyto_train':
+        published_dataset_location = 'https://www.cancerimagingarchive.net/collection/bone-marrow-cytomorphology_mll_helmholtz_fraunhofer/'
+        published_annotations_location = published_dataset_location
+        if cluster_local == 'cluster':
+            original_full_dataset_path = '' # /lustre/groups/shared/histology_data/hematology_data/BM_cytomorphology_data/            
+            dataset_csv_path = '/lustre/groups/shared/histology_data/hematology_data/BM_cytomorphology_data/bm_train.csv'
+        elif cluster_local == 'local':
+            original_full_dataset_path = None
+            dataset_csv_path = '/home/ivan/Helmholtz/VLMevaluation/Datasets/Bone_marrow_cyto.csv'
+
+        abbreviation_dict_path = os.path.join(vlm_eval_subset_folder_path, f'{dataset_name}_abbreviation_dictionary.csv')
+        
+        n_samples_per_label = 100
+        paths_column_in_csv = 'Image Path'
+        sorting_label_column_in_csv = 'Label'
+        which_classes = 'all' # Which labels to include in the dataset (for example in this case all cell types)
+        column_labels_to_keep=[sorting_label_column_in_csv]
+        ground_truth_columns_conf_mat = ['Label']
+        predicted_columns_conf_mat = ['cell_type']
+        dataset_to_avoid_overlap_with = 'Bone_Marrow_Cyto'
+        associated_train_dataset_name = 'Bone_Marrow_Cyto_train'
+        
     elif dataset_name == 'WBCAtt':
         published_dataset_location = 'https://www.sciencedirect.com/science/article/pii/S2352340920303681#ec-research-data'
         published_annotations_location = 'https://github.com/apple2373/wbcatt'
@@ -163,6 +191,7 @@ def get_dataset_info(dataset_name):
             
         abbreviation_dict_path = None
 
+        n_samples_per_label = 50
         paths_column_in_csv = 'path'
         sorting_label_column_in_csv = 'label'
         which_classes = 'all' # Which labels to include in the dataset (for example in this case all cell types)
@@ -194,7 +223,7 @@ def get_dataset_info(dataset_name):
         predicted_columns_conf_mat = ground_truth_columns_conf_mat   
         #['label', 'cell_size', 'cell_shape', 'nucleus_shape', 'nuclear_cytoplasmic_ratio', 'chromatin_density', 'cytoplasm_vacuole', 'cytoplasm_texture', 'cytoplasm_colour', 'granule_type', 'granule_colour', 'granularity']        
         dataset_to_avoid_overlap_with = None
- 
+        associated_train_dataset_name = None
     
     dataset_info = {'dataset_name': dataset_name,
                     'published_dataset_location': published_dataset_location,
@@ -206,13 +235,15 @@ def get_dataset_info(dataset_name):
                     'abbreviation_dict_path': abbreviation_dict_path,
                     'results_folder_path': results_folder_path,
                     'plots_folder_path': plots_folder_path,  
+                    'n_samples_per_label': n_samples_per_label,
                     'paths_column_in_csv': paths_column_in_csv,
                     'sorting_label_column_in_csv': sorting_label_column_in_csv,
                     'which_classes': which_classes,
                     'column_labels_to_keep': column_labels_to_keep,
                     'ground_truth_columns_conf_mat': ground_truth_columns_conf_mat,
                     'predicted_columns_conf_mat': predicted_columns_conf_mat,
-                    'dataset_to_avoid_overlap_with': dataset_to_avoid_overlap_with}    
+                    'dataset_to_avoid_overlap_with': dataset_to_avoid_overlap_with,
+                    'associated_train_dataset_name': associated_train_dataset_name}    
     return dataset_info
 
 

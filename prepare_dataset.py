@@ -16,15 +16,12 @@ from dataset_info_and_paths import get_dataset_info
 
 
 def sample_data_subset(
-    dataset_name: str,
-    n_per_label: int,
-    dataset_avoid_overlap: str = None
+    dataset_name: str
 ):
     """Creates a subset by sampling equally from each class.
 
     Args:
         dataset_name (str): Name of the dataset to create subset from
-        n_per_label (int): Number of images per class to include in subset
 
     The code can be easily modified to create multiple nonoverlapping subsets of the dataset by introducing
     another parameter output_folder_names and uncommenting suitable lines in the code. If dataset_to_avoid_overlap_with
@@ -44,7 +41,8 @@ def sample_data_subset(
     vlm_eval_subset_labels_path = vlm_eval_subset_labels_path.replace('.csv', '').replace('.xlsx', '')
     original_full_dataset_path = dataset_info['original_full_dataset_path']
     dataset_csv_path = dataset_info['dataset_csv_path']
-    vlm_eval_subset_folder_path = dataset_info['vlm_eval_subset_folder_path']    
+    vlm_eval_subset_folder_path = dataset_info['vlm_eval_subset_folder_path']
+    n_samples_per_label = dataset_info['n_samples_per_label']
     paths_column_in_csv = dataset_info['paths_column_in_csv']
     sorting_label_column_in_csv = dataset_info['sorting_label_column_in_csv']
     which_classes = dataset_info['which_classes']
@@ -112,10 +110,10 @@ def sample_data_subset(
         # Shuffle the dataframe
         df_class = df_class.sample(frac=1, random_state=42).reset_index(drop=True)
         
-        # Adjust n_per_label if not enough samples available        
-        samples_per_folder = n_per_label
-        if len(df_class) < n_per_label * no_folders:
-            print(f"Warning: Not enough samples for current_class {current_class}. Required: {n_per_label * no_folders}, Available: {len(df_class)}")
+        # Adjust n_samples_per_label if not enough samples available        
+        samples_per_folder = n_samples_per_label
+        if len(df_class) < n_samples_per_label * no_folders:
+            print(f"Warning: Not enough samples for current_class {current_class}. Required: {n_samples_per_label * no_folders}, Available: {len(df_class)}")
             print(f"Adjusting to {samples_per_folder} samples per folder for current_class {current_class}")
             samples_per_folder = len(df_class) // no_folders
         
@@ -168,15 +166,13 @@ def sample_data_subset(
 if __name__ == '__main__':   
     
     parser = argparse.ArgumentParser(description='Create dataset subsets by sampling equally from each class')
-    parser.add_argument('--n_per_label', type=int, default=50,
-                        help='Number of images per class to include in subset')
     parser.add_argument('--dataset_name', type=str,
                         help='Dataset name to process')
     
     args = parser.parse_args()
     
     print(f"\nProcessing dataset: {args.dataset_name}")
-    sample_data_subset(args.dataset_name, args.n_per_label)
+    sample_data_subset(args.dataset_name)
 
 
 
