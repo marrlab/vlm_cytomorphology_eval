@@ -80,19 +80,23 @@ def prepare_fine_tuning_jsonl(n_train_samples_per_label, dataset_name, task_type
             jsonl_entry = api_finetuning_entry(prompt_text, image_url, label_text)
             f.write(jsonl_entry + '\n')
 
+
+
     return 0
 
         
-# n_train_samples_per_label=10
-# dataset_name='Bone_Marrow_Cyto_val'
+
+
+# n_train_samples_per_label=50
+# dataset_name='Bone_Marrow_Cyto_train'
 # task_type='0shot_classification'
 # model_family='gpt'
 
 
 # prepare_fine_tuning_jsonl(n_train_samples_per_label, dataset_name, task_type, model_family)
 
-# n_train_samples_per_label=50
-# dataset_name='Bone_Marrow_Cyto_train'
+# n_train_samples_per_label=10
+# dataset_name='Bone_Marrow_Cyto_val'
 # task_type='0shot_classification'
 # model_family='gpt'
 

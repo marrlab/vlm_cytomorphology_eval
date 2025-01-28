@@ -12,6 +12,7 @@ from openai import OpenAI
 # import os
 # import time
 # import pandas as pd
+import json
 
 client = OpenAI()
 
@@ -81,6 +82,27 @@ def gpt_api_text_inquiry(prompt_text, vlm_name='gpt-4o', **kwargs):
 
 def gpt_api_finetuning_entry(prompt_text, image_url, ground_truth_label):
 
-    entry = '{"messages": [{"role": "system", "content": "You are an assistant that diagnoses cell images."}, {"role": "user", "content": "' + prompt_text + '"}, {"role": "user", "content": [{"type": "image_url", "image_url": {"url": "' + image_url + '","detail": "low"}}]}, {"role": "assistant", "content": "' + ground_truth_label + '"}]}'
-    
-    return entry
+    entry = '{"messages": [{"role": "system", "content": "You are an assistant that identifies call types."}, {"role": "user", "content": ' + prompt_text + '}, {"role": "user", "content": [{"type": "image_url", "image_url": {"url": ' + image_url + '}}]}, {"role": "assistant", "content": ' + ground_truth_label + '}]}'
+
+    jsonl_entry = json.dumps(entry)
+
+    return jsonl_entry
+
+
+def gpt_api_finetune(train_fine_tuning_jsonl_path, val_fine_tuning_jsonl_path, n_epochs):
+
+
+    client.fine_tuning.jobs.create(
+        training_file=train_fine_tuning_jsonl_path,
+        validation_file=val_fine_tuning_jsonl_path,
+        model="gpt-4o-mini",
+        method={
+    "type": "supervised",
+    "supervised": {
+      "hyperparameters": {
+                "n_epochs": n_epochs
+                }
+            }
+        }
+    )
+
