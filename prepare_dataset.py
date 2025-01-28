@@ -53,14 +53,14 @@ def sample_data_subset(
     if datasets_to_avoid_overlap_with is not None:
         datasets_to_avoid_overlap_with_labels_df = []
 
-        for dataset_to_avoid_overlap in datasets_to_avoid_overlap_with
-            dataset_to_avoid_overlap_with_info = get_dataset_info(dataset_to_avoid_overlap_with)
-            dataset_to_avoid_overlap_with_labels_path = dataset_to_avoid_overlap_with_info['vlm_eval_subset_labels_path']
+        for dataset_to_avoid_overlap in datasets_to_avoid_overlap_with:
+            dataset_to_avoid_overlap_info = get_dataset_info(dataset_to_avoid_overlap)
+            dataset_to_avoid_overlap_labels_path = dataset_to_avoid_overlap_info['vlm_eval_subset_labels_path']
 
-            if not os.path.exists(dataset_to_avoid_overlap_with_labels_path ):
-                raise ValueError(f"Dataset to avoid overlap with {dataset_to_avoid_overlap_with} labels not found at {dataset_to_avoid_overlap_with_labels_path}. Run prepare_dataset.py for this dataset first.")
+            if not os.path.exists(dataset_to_avoid_overlap_labels_path ):
+                raise ValueError(f"Dataset to avoid overlap with {dataset_to_avoid_overlap} labels not found at {dataset_to_avoid_overlap_labels_path}. Run prepare_dataset.py for this dataset first.")
 
-            dataset_to_avoid_overlap_labels_df = pd.read_csv(dataset_to_avoid_overlap_with_labels_path)
+            dataset_to_avoid_overlap_labels_df = pd.read_csv(dataset_to_avoid_overlap_labels_path)
 
             datasets_to_avoid_overlap_with_labels_df.append(dataset_to_avoid_overlap_labels_df)
 
