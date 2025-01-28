@@ -77,3 +77,10 @@ def gpt_api_text_inquiry(prompt_text, vlm_name='gpt-4o', **kwargs):
     usage = response.usage.total_tokens
     
     return answer, usage
+
+
+def gpt_api_finetuning_entry(prompt_text, image_url, ground_truth_label):
+
+    entry = '{"messages": [{"role": "system", "content": "You are an assistant that diagnoses cell images."}, {"role": "user", "content": "' + prompt_text + '"}, {"role": "user", "content": [{"type": "image_url", "image_url": {"url": "' + image_url + '","detail": "low"}}]}, {"role": "assistant", "content": "' + ground_truth_label + '"}]}'
+    
+    return entry

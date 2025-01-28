@@ -47,17 +47,22 @@ def sample_data_subset(
     sorting_label_column_in_csv = dataset_info['sorting_label_column_in_csv']
     which_classes = dataset_info['which_classes']
     column_labels_to_keep = dataset_info['column_labels_to_keep']
-    dataset_to_avoid_overlap_with = dataset_info['dataset_to_avoid_overlap_with']
+    datasets_to_avoid_overlap_with = dataset_info['datasets_to_avoid_overlap_with']
 
 
-    if dataset_to_avoid_overlap_with is not None:
-        dataset_to_avoid_overlap_with_info = get_dataset_info(dataset_to_avoid_overlap_with)
-        dataset_to_avoid_overlap_with_labels_path = dataset_to_avoid_overlap_with_info['vlm_eval_subset_labels_path']
+    if datasets_to_avoid_overlap_with is not None:
+        datasets_to_avoid_overlap_with_labels_df = []
 
-        if not os.path.exists(dataset_to_avoid_overlap_with_labels_path ):
-            raise ValueError(f"Dataset to avoid overlap with {dataset_to_avoid_overlap_with} labels not found at {dataset_to_avoid_overlap_with_labels_path}. Run prepare_dataset.py for this dataset first.")
+        for dataset_to_avoid_overlap in datasets_to_avoid_overlap_with
+            dataset_to_avoid_overlap_with_info = get_dataset_info(dataset_to_avoid_overlap_with)
+            dataset_to_avoid_overlap_with_labels_path = dataset_to_avoid_overlap_with_info['vlm_eval_subset_labels_path']
 
-        dataset_to_avoid_overlap_with_labels_df = pd.read_csv(dataset_to_avoid_overlap_with_labels_path)
+            if not os.path.exists(dataset_to_avoid_overlap_with_labels_path ):
+                raise ValueError(f"Dataset to avoid overlap with {dataset_to_avoid_overlap_with} labels not found at {dataset_to_avoid_overlap_with_labels_path}. Run prepare_dataset.py for this dataset first.")
+
+            dataset_to_avoid_overlap_labels_df = pd.read_csv(dataset_to_avoid_overlap_with_labels_path)
+
+            datasets_to_avoid_overlap_with_labels_df.append(dataset_to_avoid_overlap_labels_df)
 
 
     # Check if labels path exists
@@ -79,8 +84,9 @@ def sample_data_subset(
     else:
         raise ValueError(f"Unsupported file format: {file_extension}")
 
-    if dataset_to_avoid_overlap_with is not None:
-        labels_df = labels_df[~labels_df[paths_column_in_csv].isin(dataset_to_avoid_overlap_with_labels_df['original_image_path'])]
+    if datasets_to_avoid_overlap_with is not None:
+        for dataset_to_avoid_overlap_labels_df in datasets_to_avoid_overlap_with_labels_df:
+            labels_df = labels_df[~labels_df[paths_column_in_csv].isin(dataset_to_avoid_overlap_labels_df['original_image_path'])]
     
     no_folders = 1 # len(output_folder_names) # Uncomment if you want create multiple nonoverlapping subsets
     

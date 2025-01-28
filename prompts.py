@@ -276,7 +276,7 @@ def get_prompt(dataset_name: str, task_type: str, reviewed=False):
             return prompt_AML_Matek_nonstructured
 
 
-    elif dataset_name == 'Bone_Marrow_Cyto':
+    elif dataset_name in ['Bone_Marrow_Cyto','Bone_Marrow_Cyto_train']:
         if task_type == '0shot_classification':
             if reviewed==False:
                 return prompt_Bone_Marrow_Cyto_0shot_classification
