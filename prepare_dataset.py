@@ -54,6 +54,7 @@ def sample_data_subset(
         datasets_to_avoid_overlap_with_labels_df = []
 
         for dataset_to_avoid_overlap in datasets_to_avoid_overlap_with:
+            print(f"Avoiding overlap with dataset: {dataset_to_avoid_overlap}")
             dataset_to_avoid_overlap_info = get_dataset_info(dataset_to_avoid_overlap)
             dataset_to_avoid_overlap_labels_path = dataset_to_avoid_overlap_info['vlm_eval_subset_labels_path']
 
@@ -85,8 +86,12 @@ def sample_data_subset(
         raise ValueError(f"Unsupported file format: {file_extension}")
 
     if datasets_to_avoid_overlap_with is not None:
+        
         for dataset_to_avoid_overlap_labels_df in datasets_to_avoid_overlap_with_labels_df:
+            print(f"Removing overlaps with: {dataset_to_avoid_overlap_labels_df}")
+            print(f"Number of samples before removal: {len(labels_df)}")
             labels_df = labels_df[~labels_df[paths_column_in_csv].isin(dataset_to_avoid_overlap_labels_df['original_image_path'])]
+            print(f"Number of samples after removal: {len(labels_df)}")
     
     no_folders = 1 # len(output_folder_names) # Uncomment if you want create multiple nonoverlapping subsets
     
@@ -122,6 +127,8 @@ def sample_data_subset(
             print(f"Warning: Not enough samples for current_class {current_class}. Required: {n_samples_per_label * no_folders}, Available: {len(df_class)}")
             print(f"Adjusting to {samples_per_folder} samples per folder for current_class {current_class}")
             samples_per_folder = len(df_class) // no_folders
+
+        print(f"Including {samples_per_folder} samples.")
         
             
         # Split the data across folders
