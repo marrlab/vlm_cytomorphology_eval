@@ -474,8 +474,14 @@ def plot_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, compute_c
     plt.savefig(conf_mat_plot_path, bbox_inches='tight')
     plt.close()
 
+# vlm_name = 'ft:gpt-4o-2024-08-06:personal:bonemarrow-n-pl-5:AuoO9vo2'
+# dataset_name = 'Bone_Marrow_Cyto'
+# task_type = '0shot_classification'
+# compute_confmat_from_scratch = True
+# for reviewed in [False,True]:
+#     plot_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, compute_confmat_from_scratch=compute_confmat_from_scratch)
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
     compute_confmat_from_scratch = True
     global_info = get_global_info()
     for dataset_name in global_info['available_datasets']:
