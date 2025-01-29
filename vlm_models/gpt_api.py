@@ -82,11 +82,13 @@ def gpt_api_text_inquiry(prompt_text, vlm_name='gpt-4o', **kwargs):
 
 def gpt_api_finetuning_entry(prompt_text, image_url, ground_truth_label):
 
-    entry = '{"messages": [{"role": "system", "content": "You are an assistant that identifies call types."}, {"role": "user", "content": ' + prompt_text + '}, {"role": "user", "content": [{"type": "image_url", "image_url": {"url": ' + image_url + '}}]}, {"role": "assistant", "content": ' + ground_truth_label + '}]}'
+    prompt_text = json.dumps(prompt_text)
 
-    jsonl_entry = json.dumps(entry)
+    entry = '{"messages": [{"role": "system", "content": "You are an assistant that identifies call types."}, {"role": "user", "content": ' + prompt_text + '}, {"role": "user", "content": [{"type": "image_url", "image_url": {"url": "' + image_url + '"}}]}, {"role": "assistant", "content": "' + ground_truth_label + '"}]}'
 
-    return jsonl_entry
+    # jsonl_entry = json.dumps(entry)
+
+    return entry
 
 
 def gpt_api_finetune(train_fine_tuning_jsonl_path, val_fine_tuning_jsonl_path, n_epochs):

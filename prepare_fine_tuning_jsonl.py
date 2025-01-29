@@ -87,18 +87,16 @@ def prepare_fine_tuning_jsonl(n_train_samples_per_label, dataset_name, task_type
         
 
 
-# n_train_samples_per_label=50
-# dataset_name='Bone_Marrow_Cyto_train'
-# task_type='0shot_classification'
-# model_family='gpt'
+dataset_name='Bone_Marrow_Cyto_train'
+task_type='0shot_classification'
+model_family='gpt'
 
+for n_train_samples_per_label in [1, 5, 10, 25, 50]:
+    prepare_fine_tuning_jsonl(n_train_samples_per_label, dataset_name, task_type, model_family)
 
-# prepare_fine_tuning_jsonl(n_train_samples_per_label, dataset_name, task_type, model_family)
+dataset_name='Bone_Marrow_Cyto_val'
+task_type='0shot_classification'
+model_family='gpt'
 
-# n_train_samples_per_label=10
-# dataset_name='Bone_Marrow_Cyto_val'
-# task_type='0shot_classification'
-# model_family='gpt'
-
-
-# prepare_fine_tuning_jsonl(n_train_samples_per_label, dataset_name, task_type, model_family)
+for n_train_samples_per_label in [1, 5, 10]:
+    prepare_fine_tuning_jsonl(n_train_samples_per_label, dataset_name, task_type, model_family)

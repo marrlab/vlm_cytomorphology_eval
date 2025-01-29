@@ -210,6 +210,13 @@ def run_api_review(vlm_name: str, dataset_name: str, task_type: str, **kwargs):
 # # run_api_review(vlm_name, dataset_name, task_type)
 # run_api_0shot_classification(vlm_name, dataset_name)
 
+
+# vlm_name = 'ft:gpt-4o-2024-08-06:personal:bonemarrow-n-pl-5:AuoO9vo2'
+# dataset_name = 'Bone_Marrow_Cyto'
+
+# run_api_0shot_classification(vlm_name, dataset_name)
+
+
 if __name__ == "__main__":
     import argparse
     
