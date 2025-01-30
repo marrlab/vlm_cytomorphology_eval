@@ -24,6 +24,7 @@ def get_global_info():
     available_datasets = ['AML_Matek', 'Bone_Marrow_Cyto', 'WBCAtt']
     available_task_types = ['0shot_classification', 'nonstructured']
     available_model_families = ['gemini', 'gpt', 'llama']
+    available_models = ['gemini-2.0-flash-exp', 'gpt-4o', 'llama-3.2-multimodal-11B']
     recommended_models = {'gemini': 'gemini-2.0-flash-exp',
                           'gpt': 'gpt-4o',
                           'llama': 'llama-3.2-multimodal-11B'}
@@ -60,6 +61,7 @@ def get_global_info():
                    'available_datasets': available_datasets,
                    'available_task_types': available_task_types,
                    'available_model_families': available_model_families,
+                   'available_models': available_models,
                    'recommended_models': recommended_models}
     return global_info
 
@@ -74,13 +76,13 @@ def get_review_model(vlm_name):
         raise ValueError(f"{vlm_name} not found among the models. Add to get_review_model in dataset_info_and_paths.py")
     return review_model
 
-def get_dataset_info(dataset_name):
+def get_dataset_info(dataset_name, dataset_type):
     """
     Get information about a specific dataset.
     
     Args:
         dataset_name (str): Name of the dataset
-        
+        dataset_type (str): train, val, test
     Returns:
         dict: Dictionary containing dataset information including:
             - dataset_name (str): Name of the dataset
@@ -96,21 +98,43 @@ def get_dataset_info(dataset_name):
             - plots_folder_path (str): Path to save plots folder  
             - paths_column_in_csv (str or int): Column name in the dataset CSV that contains image paths
             - n_samples_per_label (int): Number of images per class to include in subset
-            - sorting_label_column_in_csv (str or int): Column name in the dataset CSV w.r.t. which the dataset will be equally drawn (for example cell types)
-            - which_classes (str): Which values of sorting_label_column_in_csv  to include in the dataset (e.g. 'all')
+            - sampling_label_column_in_csv (str or int): Column name in the dataset CSV w.r.t. which the dataset will be equally drawn (for example cell types)
+            - which_classes (str): Which values of sampling_label_column_in_csv to include in the dataset (e.g. 'all')
             - column_labels_to_keep (list): Which label columns from csv to include in the vlm_dataset csv
             - ground_truth_columns_conf_mat (list): Columns to use as ground truth in confusion matrix
             - predicted_columns_conf_mat (list): Columns to use as predictions in confusion matrix
-            - datasets_to_avoid_overlap_with (str): Name of the dataset to avoid overlap with
-            - associated_train_dataset_name (str): Name of the associated train dataset for finetuning the models  
+            - dataset_types_to_avoid_overlap_with (list): List of dataset types (train/val/test) to avoid overlap with
+            - associated_train_dataset_type (str): Type of the associated train dataset for finetuning the models
     """
     cluster_local = get_global_info()['cluster_local']
 
-    vlm_eval_subset_folder_path = get_vlm_eval_subset_folder_path(dataset_name) 
+    vlm_eval_subset_folder_path = get_vlm_eval_subset_folder_path(dataset_name, dataset_type) 
+    # vlm_eval_subset_folder_path = vlm_eval_subset_folder_paths['vlm_eval_subset_folder_path']
+    # train_val_or_test_path = vlm_eval_subset_folder_paths['train_val_or_test_path']
     results_folder_path = get_results_folder_path(dataset_name)['results_folder_path']
     plots_folder_path = get_plots_folder_path(dataset_name)
 
-    vlm_eval_subset_labels_path = os.path.join(vlm_eval_subset_folder_path, f'{dataset_name}_labels.csv')
+    vlm_eval_subset_labels_path = os.path.join(vlm_eval_subset_folder_path, f'{dataset_name}_{dataset_type}_labels.csv')
+    abbreviation_dict_path = os.path.join(os.path.dirname(vlm_eval_subset_folder_path), f'{dataset_name}_abbreviation_dictionary.csv')
+
+    vlm_eval_subset_oline_location = None
+
+    if dataset_type == 'test':
+        n_samples_per_label = 50
+    elif dataset_type == 'train':
+        n_samples_per_label = 10
+    elif dataset_type == 'val':
+        n_samples_per_label = 0
+
+    if dataset_type == 'test':
+        dataset_types_to_avoid_overlap_with = None
+        associated_train_dataset_type = 'train'
+    elif dataset_type == 'train':
+        dataset_types_to_avoid_overlap_with = ['test']
+        associated_train_dataset_type = None
+    elif dataset_type == 'val':
+        dataset_types_to_avoid_overlap_with = ['train', 'test']
+        associated_train_dataset_type = 'train'
 
     
 
@@ -123,20 +147,14 @@ def get_dataset_info(dataset_name):
         elif cluster_local == 'local':#
             original_full_dataset_path = None
             dataset_csv_path = '/home/ivan/Helmholtz/Furkan/Data/AML_Matek.dat'
-
-        abbreviation_dict_path = os.path.join(vlm_eval_subset_folder_path, f'{dataset_name}_abbreviation_dictionary.csv')
-
-        vlm_eval_subset_oline_location = None
         
-        n_samples_per_label = 50
         paths_column_in_csv = 0
-        sorting_label_column_in_csv = 1
+        sampling_label_column_in_csv = 1
         which_classes = 'all' # Which classes to include in the dataset (for example in this case all cell types)
-        column_labels_to_keep=[sorting_label_column_in_csv] # Which label columns from csv to include in the vlm_dataset csv
-        ground_truth_columns_conf_mat = ['1']        
+        column_labels_to_keep=[sampling_label_column_in_csv] # Which label columns from csv to include in the vlm_dataset csv
+        ground_truth_columns_conf_mat = ['label']        
         predicted_columns_conf_mat = ['cell_type']
-        datasets_to_avoid_overlap_with = None
-        associated_train_dataset_name = None
+      
 
 
     elif dataset_name == 'Bone_Marrow_Cyto':
@@ -148,93 +166,42 @@ def get_dataset_info(dataset_name):
         elif cluster_local == 'local':
             original_full_dataset_path = None
             dataset_csv_path = '/home/ivan/Helmholtz/VLMevaluation/Datasets/Bone_marrow_cyto_train.csv'
-
-        abbreviation_dict_path = os.path.join(vlm_eval_subset_folder_path, f'{dataset_name}_abbreviation_dictionary.csv')
-
-        vlm_eval_subset_oline_location = None
         
-        n_samples_per_label = 50
         paths_column_in_csv = 'Image Path'
-        sorting_label_column_in_csv = 'Label'
+        sampling_label_column_in_csv = 'Label'
         which_classes = 'all' # Which labels to include in the dataset (for example in this case all cell types)
-        column_labels_to_keep=[sorting_label_column_in_csv]
-        ground_truth_columns_conf_mat = ['Label']
+        column_labels_to_keep=[sampling_label_column_in_csv]
+        ground_truth_columns_conf_mat = ['label']
         predicted_columns_conf_mat = ['cell_type']
-        datasets_to_avoid_overlap_with = None
-        associated_train_dataset_name = 'Bone_Marrow_Cyto_train'
-        
-    elif dataset_name == 'Bone_Marrow_Cyto_train':
-        published_dataset_location = 'https://www.cancerimagingarchive.net/collection/bone-marrow-cytomorphology_mll_helmholtz_fraunhofer/'
+ 
+
+
+    elif dataset_name == 'Acevedo':
+        published_dataset_location = 'https://www.sciencedirect.com/science/article/pii/S2352340920303681#ec-research-data'
         published_annotations_location = published_dataset_location
         if cluster_local == 'cluster':
-            original_full_dataset_path = '' # /lustre/groups/shared/histology_data/hematology_data/BM_cytomorphology_data/            
-            dataset_csv_path = '/lustre/groups/shared/histology_data/hematology_data/BM_cytomorphology_data/bm_train.csv'
+            original_full_dataset_path = "" # "/lustre/groups/labs/marr/qscd01/datasets/Acevedo_20"            
+            dataset_csv_path = "/lustre/groups/labs/marr/qscd01/projects/cytology_vlm_eval/Datasets/Acevedo/acevedo_full_labels.csv"
         elif cluster_local == 'local':
-            original_full_dataset_path = None
-            dataset_csv_path = '/home/ivan/Helmholtz/VLMevaluation/Datasets/Bone_marrow_cyto_train.csv'
+            original_full_dataset_path = '/home/ivan/Helmholtz/Furkan/Data/Acevedo_20/'
+            dataset_csv_path = '/home/ivan/Helmholtz/Furkan/Data/Acevedo_20/acevedo_full_labels.csv'
 
-        abbreviation_dict_path = os.path.join(vlm_eval_subset_folder_path, 'Bone_Marrow_Cyto_abbreviation_dictionary.csv')
 
-        vlm_eval_subset_oline_location = 'https://raw.githubusercontent.com/ivankukuljan/Bone_Marrow_Cyto_train/refs/heads/main/'
-        
-        n_samples_per_label = 50
-        paths_column_in_csv = 'Image Path'
-        sorting_label_column_in_csv = 'Label'
+        if dataset_type == 'train':
+            vlm_eval_subset_oline_location = ''
+        elif dataset_type == 'val':
+            vlm_eval_subset_oline_location = ''
+        elif dataset_type == 'test':
+            vlm_eval_subset_oline_location = ''
+            
+
+        paths_column_in_csv = 'path'
+        sampling_label_column_in_csv = 'label'
         which_classes = 'all' # Which labels to include in the dataset (for example in this case all cell types)
-        column_labels_to_keep=[sorting_label_column_in_csv]
-        ground_truth_columns_conf_mat = ['Label']
+        column_labels_to_keep=[sampling_label_column_in_csv]
+        ground_truth_columns_conf_mat = ['label']
         predicted_columns_conf_mat = ['cell_type']
-        datasets_to_avoid_overlap_with = ['Bone_Marrow_Cyto']
-        associated_train_dataset_name = 'Bone_Marrow_Cyto_train'
-        
-    elif dataset_name == 'Bone_Marrow_Cyto_val':
-        published_dataset_location = 'https://www.cancerimagingarchive.net/collection/bone-marrow-cytomorphology_mll_helmholtz_fraunhofer/'
-        published_annotations_location = published_dataset_location
-        if cluster_local == 'cluster':
-            original_full_dataset_path = '' # /lustre/groups/shared/histology_data/hematology_data/BM_cytomorphology_data/            
-            dataset_csv_path = '/lustre/groups/shared/histology_data/hematology_data/BM_cytomorphology_data/bm_train.csv'
-        elif cluster_local == 'local':
-            original_full_dataset_path = None
-            dataset_csv_path = '/home/ivan/Helmholtz/VLMevaluation/Datasets/Bone_marrow_cyto_train.csv'
 
-        abbreviation_dict_path = os.path.join(vlm_eval_subset_folder_path, 'Bone_Marrow_Cyto_abbreviation_dictionary.csv')
-
-        vlm_eval_subset_oline_location = 'https://raw.githubusercontent.com/ivankukuljan/Bone_Marrow_Cyto_train/refs/heads/main/'
-        
-        n_samples_per_label = 50
-        paths_column_in_csv = 'Image Path'
-        sorting_label_column_in_csv = 'Label'
-        which_classes = 'all' # Which labels to include in the dataset (for example in this case all cell types)
-        column_labels_to_keep=[sorting_label_column_in_csv]
-        ground_truth_columns_conf_mat = ['Label']
-        predicted_columns_conf_mat = ['cell_type']
-        datasets_to_avoid_overlap_with = ['Bone_Marrow_Cyto','Bone_Marrow_Cyto_train']
-        associated_train_dataset_name = 'Bone_Marrow_Cyto_train'
-        
-    elif dataset_name == 'Bone_Marrow_Cyto_finetune_test':
-        published_dataset_location = 'https://www.cancerimagingarchive.net/collection/bone-marrow-cytomorphology_mll_helmholtz_fraunhofer/'
-        published_annotations_location = published_dataset_location
-        if cluster_local == 'cluster':
-            original_full_dataset_path = '' # /lustre/groups/shared/histology_data/hematology_data/BM_cytomorphology_data/            
-            dataset_csv_path = '/lustre/groups/shared/histology_data/hematology_data/BM_cytomorphology_data/bm_test.csv'
-        elif cluster_local == 'local':
-            original_full_dataset_path = None
-            dataset_csv_path = '/home/ivan/Helmholtz/VLMevaluation/Datasets/Bone_marrow_cyto_test.csv'
-
-        abbreviation_dict_path = os.path.join(vlm_eval_subset_folder_path, 'Bone_Marrow_Cyto_abbreviation_dictionary.csv')
-
-        vlm_eval_subset_oline_location = None
-        
-        n_samples_per_label = 50
-        paths_column_in_csv = 'Image Path'
-        sorting_label_column_in_csv = 'Label'
-        which_classes = 'all' # Which labels to include in the dataset (for example in this case all cell types)
-        column_labels_to_keep=[sorting_label_column_in_csv]
-        ground_truth_columns_conf_mat = ['Label']
-        predicted_columns_conf_mat = ['cell_type']
-        datasets_to_avoid_overlap_with = ['Bone_Marrow_Cyto_train','Bone_Marrow_Cyto_val']
-        associated_train_dataset_name = 'Bone_Marrow_Cyto_train'
-        
     elif dataset_name == 'WBCAtt':
         published_dataset_location = 'https://www.sciencedirect.com/science/article/pii/S2352340920303681#ec-research-data'
         published_annotations_location = 'https://github.com/apple2373/wbcatt'
@@ -247,11 +214,8 @@ def get_dataset_info(dataset_name):
             
         abbreviation_dict_path = None
 
-        vlm_eval_subset_oline_location = None
-
-        n_samples_per_label = 50
         paths_column_in_csv = 'path'
-        sorting_label_column_in_csv = 'label'
+        sampling_label_column_in_csv = 'label'
         which_classes = 'all' # Which labels to include in the dataset (for example in this case all cell types)
         column_labels_to_keep=['label',
             'cell_size',
@@ -280,8 +244,7 @@ def get_dataset_info(dataset_name):
         # ['label', 'cell_size', 'cell_shape', 'nucleus_shape', 'nuclear_cytoplasmic_ratio', 'chromatin_density', 'cytoplasm_vacuole', 'cytoplasm_texture', 'cytoplasm_colour', 'granule_type', 'granule_colour', 'granularity']        
         predicted_columns_conf_mat = ground_truth_columns_conf_mat   
         #['label', 'cell_size', 'cell_shape', 'nucleus_shape', 'nuclear_cytoplasmic_ratio', 'chromatin_density', 'cytoplasm_vacuole', 'cytoplasm_texture', 'cytoplasm_colour', 'granule_type', 'granule_colour', 'granularity']        
-        datasets_to_avoid_overlap_with = None
-        associated_train_dataset_name = None
+  
     
     dataset_info = {'dataset_name': dataset_name,
                     'published_dataset_location': published_dataset_location,
@@ -296,38 +259,47 @@ def get_dataset_info(dataset_name):
                     'plots_folder_path': plots_folder_path,  
                     'n_samples_per_label': n_samples_per_label,
                     'paths_column_in_csv': paths_column_in_csv,
-                    'sorting_label_column_in_csv': sorting_label_column_in_csv,
+                    'sampling_label_column_in_csv': sampling_label_column_in_csv,
                     'which_classes': which_classes,
                     'column_labels_to_keep': column_labels_to_keep,
                     'ground_truth_columns_conf_mat': ground_truth_columns_conf_mat,
                     'predicted_columns_conf_mat': predicted_columns_conf_mat,
-                    'datasets_to_avoid_overlap_with': datasets_to_avoid_overlap_with,
-                    'associated_train_dataset_name': associated_train_dataset_name}    
+                    'dataset_types_to_avoid_overlap_with': dataset_types_to_avoid_overlap_with,
+                    'associated_train_dataset_type': associated_train_dataset_type}    
     return dataset_info
 
 
-def get_vlm_eval_subset_folder_path(dataset_name): 
+def get_vlm_eval_subset_folder_path(dataset_name, dataset_type): 
     """
     Get path to VLM evaluation dataset folder based on dataset and cluster/local.
+
+    Args:
+        dataset_name (str): Name of the dataset
+        dataset_type (str): train, val, test
     """
 
     global_info = get_global_info()
     vlm_eval_subsets_root_folder_path = global_info['vlm_eval_subsets_root_folder_path']
 
-    vlm_eval_subset_folder_path = os.path.join(vlm_eval_subsets_root_folder_path, dataset_name) #+'_'+structured_nonstructured)
+    vlm_eval_subset_folder_path = os.path.join(vlm_eval_subsets_root_folder_path, dataset_name, dataset_type) #+'_'+structured_nonstructured)
+    #train_val_or_test_path = os.path.join(vlm_eval_subset_folder_path, dataset_type)
 
     os.makedirs(vlm_eval_subset_folder_path, exist_ok=True)
+    #os.makedirs(train_val_or_test_path, exist_ok=True)
+
+    #vlm_eval_subset_folder_paths = {'vlm_eval_subset_folder_path': vlm_eval_subset_folder_path,
+    #                                'train_val_or_test_path': train_val_or_test_path}
 
     return vlm_eval_subset_folder_path
 
-def get_fine_tuning_jsonl_path(n_train_samples_per_label, dataset_name, task_type, model_family):
+def get_fine_tuning_jsonl_path(n_train_samples_per_label, dataset_name, dataset_type, task_type, model_family):
     """
     Get path to fine tuning jsonl file based on dataset and cluster/local.
     """
 
-    vlm_eval_subset_folder_path = get_vlm_eval_subset_folder_path(dataset_name)
+    vlm_eval_subset_folder_path = get_vlm_eval_subset_folder_path(dataset_name, dataset_type)
 
-    fine_tuning_jsonl_path = os.path.join(vlm_eval_subset_folder_path, f'fine_tuning_{dataset_name}_task_type_{task_type}_model_family_{model_family}_n_per_label_{n_train_samples_per_label}.jsonl')
+    fine_tuning_jsonl_path = os.path.join(vlm_eval_subset_folder_path, f'fine_tuning_{dataset_name}_{dataset_type}_task_type_{task_type}_model_family_{model_family}_n_per_label_{n_train_samples_per_label}.jsonl')
 
     return fine_tuning_jsonl_path
 

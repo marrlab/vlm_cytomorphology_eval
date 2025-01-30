@@ -29,7 +29,7 @@ def compute_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, comput
         conf_matrix = pd.read_excel(output_path+'.xlsx')
         return conf_matrix
     else:
-        dataset_info = get_dataset_info(dataset_name)
+        dataset_info = get_dataset_info(dataset_name, 'test')
     
         ground_truth_df_path = dataset_info['vlm_eval_subset_labels_path']
         ground_truth_columns = dataset_info['ground_truth_columns_conf_mat']
@@ -481,12 +481,13 @@ def plot_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, compute_c
 # for reviewed in [False,True]:
 #     plot_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, compute_confmat_from_scratch=compute_confmat_from_scratch)
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
     compute_confmat_from_scratch = True
     global_info = get_global_info()
     for dataset_name in global_info['available_datasets']:
-        for vlm_family in global_info['available_model_families']:
-            vlm_name = global_info['recommended_models'][vlm_family]
+        # for vlm_family in global_info['available_model_families']:
+        #     vlm_name = global_info['recommended_models'][vlm_family]
+        for vlm_name in global_info['available_models']:
             for task_type in [t for t in global_info['available_task_types'] if t != 'nonstructured']:
                 for reviewed in [True, False]:
                     plot_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, compute_confmat_from_scratch=compute_confmat_from_scratch)

@@ -27,7 +27,7 @@ def prepare_fine_tuning_jsonl(n_train_samples_per_label, dataset_name, task_type
     dataset_info = get_dataset_info(dataset_name)
 
     vlm_eval_subset_labels_path = dataset_info['vlm_eval_subset_labels_path']
-    sorting_label_column_in_csv = dataset_info['sorting_label_column_in_csv']
+    # sampling_label_column_in_csv = dataset_info['sampling_label_column_in_csv']
     vlm_eval_subset_oline_location = dataset_info['vlm_eval_subset_oline_location']
     abbreviation_dict_path = dataset_info['abbreviation_dict_path']
 
@@ -46,10 +46,10 @@ def prepare_fine_tuning_jsonl(n_train_samples_per_label, dataset_name, task_type
         abbreviation_dict = {row[0]: row[1].replace(' \t','') for _, row in abbreviation_dict.iterrows()}
         
 
-    unique_labels = dataset_labels[sorting_label_column_in_csv].unique()
+    unique_labels = dataset_labels['label'].unique() #sampling_label_column_in_csv
 
     for label in unique_labels:
-        label_samples = dataset_labels[dataset_labels[sorting_label_column_in_csv] == label]
+        label_samples = dataset_labels[dataset_labels['label'] == label] #sampling_label_column_in_csv
 
         n_label = min(n_train_samples_per_label, len(label_samples))
 
@@ -70,7 +70,7 @@ def prepare_fine_tuning_jsonl(n_train_samples_per_label, dataset_name, task_type
         for _, row in cells_to_include.iterrows():
             image_name = row['image_name']
             image_url = vlm_eval_subset_oline_location + image_name + '.jpg'
-            ground_truth_label = row[sorting_label_column_in_csv]
+            ground_truth_label = row['label'] #sampling_label_column_in_csv
             
             if abbreviation_dict_path is not None:
                 label_text = ground_truth_label + ' ' + abbreviation_dict[ground_truth_label]

@@ -57,7 +57,7 @@ def run_api_0shot_classification(vlm_name, dataset_name):
 
     api_visual_inquiry, api_text_inquiry, kwargs, sleep_time = import_model(vlm_name) 
 
-    dataset_info = get_dataset_info(dataset_name)
+    dataset_info = get_dataset_info(dataset_name, 'test')
 
     vlm_eval_subset_folder_path = dataset_info['vlm_eval_subset_folder_path']
 

@@ -16,19 +16,20 @@ from dataset_info_and_paths import get_dataset_info
 
 
 def sample_data_subset(
-    dataset_name: str
+    dataset_name: str,
+    dataset_type: str
 ):
     """Creates a subset by sampling equally from each class.
 
     Args:
         dataset_name (str): Name of the dataset to create subset from
-
+        dataset_type (str): Type of the dataset to create subset from (train, val, test)
     The code can be easily modified to create multiple nonoverlapping subsets of the dataset by introducing
-    another parameter output_folder_names and uncommenting suitable lines in the code. If dataset_to_avoid_overlap_with
-    is not None, the code will avoid overlap with the dataset_to_avoid_overlap_with dataset.
+    another parameter output_folder_names and uncommenting suitable lines in the code. If dataset_types_to_avoid_overlap_with
+    is not None, the code will avoid overlap with the dataset_types_to_avoid_overlap_with dataset.
     """
 
-    dataset_info = get_dataset_info(dataset_name)   
+    dataset_info = get_dataset_info(dataset_name, dataset_type)   
 
     vlm_eval_subset_labels_path = dataset_info['vlm_eval_subset_labels_path']
 
@@ -42,32 +43,19 @@ def sample_data_subset(
     original_full_dataset_path = dataset_info['original_full_dataset_path']
     dataset_csv_path = dataset_info['dataset_csv_path']
     vlm_eval_subset_folder_path = dataset_info['vlm_eval_subset_folder_path']
+    # train_val_or_test_path = dataset_info['train_val_or_test_path']
     n_samples_per_label = dataset_info['n_samples_per_label']
     paths_column_in_csv = dataset_info['paths_column_in_csv']
-    sorting_label_column_in_csv = dataset_info['sorting_label_column_in_csv']
+    sampling_label_column_in_csv = dataset_info['sampling_label_column_in_csv']
     which_classes = dataset_info['which_classes']
     column_labels_to_keep = dataset_info['column_labels_to_keep']
-    datasets_to_avoid_overlap_with = dataset_info['datasets_to_avoid_overlap_with']
+    dataset_types_to_avoid_overlap_with = dataset_info['dataset_types_to_avoid_overlap_with']
+    # associated_train_dataset_type = dataset_info['associated_train_dataset_type']  
 
+    if n_samples_per_label == 0:
+        print(f"Warning: n_samples_per_label is 0 for dataset {dataset_name}, {dataset_type}. Skipping subset preparation.")
+        return
 
-    if datasets_to_avoid_overlap_with is not None:
-        datasets_to_avoid_overlap_with_labels_df = []
-
-        for dataset_to_avoid_overlap in datasets_to_avoid_overlap_with:
-            print(f"Avoiding overlap with dataset: {dataset_to_avoid_overlap}")
-            dataset_to_avoid_overlap_info = get_dataset_info(dataset_to_avoid_overlap)
-            dataset_to_avoid_overlap_labels_path = dataset_to_avoid_overlap_info['vlm_eval_subset_labels_path']
-
-            if not os.path.exists(dataset_to_avoid_overlap_labels_path ):
-                raise ValueError(f"Dataset to avoid overlap with {dataset_to_avoid_overlap} labels not found at {dataset_to_avoid_overlap_labels_path}. Run prepare_dataset.py for this dataset first.")
-
-            dataset_to_avoid_overlap_labels_df = pd.read_csv(dataset_to_avoid_overlap_labels_path)
-
-            datasets_to_avoid_overlap_with_labels_df.append(dataset_to_avoid_overlap_labels_df)
-
-
-    # Check if labels path exists
-    
 
     # Load the labels file
     # Determine file format and load accordingly
@@ -85,20 +73,31 @@ def sample_data_subset(
     else:
         raise ValueError(f"Unsupported file format: {file_extension}")
 
-    if datasets_to_avoid_overlap_with is not None:
-        
-        for dataset_to_avoid_overlap_labels_df in datasets_to_avoid_overlap_with_labels_df:
-            print(f"Removing overlaps with: {dataset_to_avoid_overlap_labels_df}")
+
+    if dataset_types_to_avoid_overlap_with is not None:
+
+        for dataset_type_to_avoid_overlap in dataset_types_to_avoid_overlap_with:
+            print(f"Avoiding overlap with dataset: {dataset_name}, {dataset_type_to_avoid_overlap}.")
             print(f"Number of samples before removal: {len(labels_df)}")
+
+            dataset_to_avoid_overlap_info = get_dataset_info(dataset_name,dataset_type_to_avoid_overlap)
+            dataset_to_avoid_overlap_labels_path = dataset_to_avoid_overlap_info['vlm_eval_subset_labels_path']
+
+            if not os.path.exists(dataset_to_avoid_overlap_labels_path ):
+                raise ValueError(f"Dataset to avoid overlap with ({dataset_name}, {dataset_type_to_avoid_overlap}) labels not found at {dataset_to_avoid_overlap_labels_path}. Run prepare_dataset.py for this dataset first.")
+
+            dataset_to_avoid_overlap_labels_df = pd.read_csv(dataset_to_avoid_overlap_labels_path)
+            
             labels_df = labels_df[~labels_df[paths_column_in_csv].isin(dataset_to_avoid_overlap_labels_df['original_image_path'])]
             print(f"Number of samples after removal: {len(labels_df)}")
-    
+
+            
     no_folders = 1 # len(output_folder_names) # Uncomment if you want create multiple nonoverlapping subsets
     
 
     # Handle 'all' option for which_classes
     if which_classes == 'all':
-        which_classes = labels_df[sorting_label_column_in_csv].unique()
+        which_classes = labels_df[sampling_label_column_in_csv].unique()
 
     if column_labels_to_keep == 'all':
         column_labels_to_keep = [col for col in labels_df.columns if col != paths_column_in_csv]
@@ -114,7 +113,7 @@ def sample_data_subset(
         print(f"Processing current_class: {current_class} - current_class {class_idx+1}/{len(which_classes)}")
 
         # Filter the dataframe for the current current_class
-        df_class = labels_df[labels_df[sorting_label_column_in_csv] == current_class]
+        df_class = labels_df[labels_df[sampling_label_column_in_csv] == current_class]
 
         
         
@@ -139,7 +138,7 @@ def sample_data_subset(
             
             # Append to the folder's dataframe
             folder_dfs[folder_name] = pd.concat(
-                [folder_dfs[folder_name], selected_rows[[paths_column_in_csv] + column_labels_to_keep].rename(columns={paths_column_in_csv: "original_image_path"})],
+                [folder_dfs[folder_name], selected_rows[[paths_column_in_csv] + column_labels_to_keep].rename(columns={paths_column_in_csv: "original_image_path", column_labels_to_keep: "label"})],
                 ignore_index=True
             )
     
@@ -183,9 +182,11 @@ if __name__ == '__main__':
                         help='Dataset name to process')
     
     args = parser.parse_args()
+
+    for dataset_type in ['test','train', 'val']: # Has to be in the order of test, train, val
     
-    print(f"\nProcessing dataset: {args.dataset_name}")
-    sample_data_subset(args.dataset_name)
+        print(f"\nProcessing dataset: {args.dataset_name}, {dataset_type}")
+        sample_data_subset(args.dataset_name, dataset_type)
 
 
 
