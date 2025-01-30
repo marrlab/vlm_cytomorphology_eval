@@ -147,7 +147,7 @@ def get_dataset_info(dataset_name):
             dataset_csv_path = '/lustre/groups/shared/histology_data/hematology_data/BM_cytomorphology_data/bm_train.csv'
         elif cluster_local == 'local':
             original_full_dataset_path = None
-            dataset_csv_path = '/home/ivan/Helmholtz/VLMevaluation/Datasets/Bone_marrow_cyto.csv'
+            dataset_csv_path = '/home/ivan/Helmholtz/VLMevaluation/Datasets/Bone_marrow_cyto_train.csv'
 
         abbreviation_dict_path = os.path.join(vlm_eval_subset_folder_path, f'{dataset_name}_abbreviation_dictionary.csv')
 
@@ -171,7 +171,7 @@ def get_dataset_info(dataset_name):
             dataset_csv_path = '/lustre/groups/shared/histology_data/hematology_data/BM_cytomorphology_data/bm_train.csv'
         elif cluster_local == 'local':
             original_full_dataset_path = None
-            dataset_csv_path = '/home/ivan/Helmholtz/VLMevaluation/Datasets/Bone_marrow_cyto.csv'
+            dataset_csv_path = '/home/ivan/Helmholtz/VLMevaluation/Datasets/Bone_marrow_cyto_train.csv'
 
         abbreviation_dict_path = os.path.join(vlm_eval_subset_folder_path, 'Bone_Marrow_Cyto_abbreviation_dictionary.csv')
 
@@ -195,7 +195,7 @@ def get_dataset_info(dataset_name):
             dataset_csv_path = '/lustre/groups/shared/histology_data/hematology_data/BM_cytomorphology_data/bm_train.csv'
         elif cluster_local == 'local':
             original_full_dataset_path = None
-            dataset_csv_path = '/home/ivan/Helmholtz/VLMevaluation/Datasets/Bone_marrow_cyto.csv'
+            dataset_csv_path = '/home/ivan/Helmholtz/VLMevaluation/Datasets/Bone_marrow_cyto_train.csv'
 
         abbreviation_dict_path = os.path.join(vlm_eval_subset_folder_path, 'Bone_Marrow_Cyto_abbreviation_dictionary.csv')
 
@@ -209,6 +209,30 @@ def get_dataset_info(dataset_name):
         ground_truth_columns_conf_mat = ['Label']
         predicted_columns_conf_mat = ['cell_type']
         datasets_to_avoid_overlap_with = ['Bone_Marrow_Cyto','Bone_Marrow_Cyto_train']
+        associated_train_dataset_name = 'Bone_Marrow_Cyto_train'
+        
+    elif dataset_name == 'Bone_Marrow_Cyto_finetune_test':
+        published_dataset_location = 'https://www.cancerimagingarchive.net/collection/bone-marrow-cytomorphology_mll_helmholtz_fraunhofer/'
+        published_annotations_location = published_dataset_location
+        if cluster_local == 'cluster':
+            original_full_dataset_path = '' # /lustre/groups/shared/histology_data/hematology_data/BM_cytomorphology_data/            
+            dataset_csv_path = '/lustre/groups/shared/histology_data/hematology_data/BM_cytomorphology_data/bm_test.csv'
+        elif cluster_local == 'local':
+            original_full_dataset_path = None
+            dataset_csv_path = '/home/ivan/Helmholtz/VLMevaluation/Datasets/Bone_marrow_cyto_test.csv'
+
+        abbreviation_dict_path = os.path.join(vlm_eval_subset_folder_path, 'Bone_Marrow_Cyto_abbreviation_dictionary.csv')
+
+        vlm_eval_subset_oline_location = None
+        
+        n_samples_per_label = 50
+        paths_column_in_csv = 'Image Path'
+        sorting_label_column_in_csv = 'Label'
+        which_classes = 'all' # Which labels to include in the dataset (for example in this case all cell types)
+        column_labels_to_keep=[sorting_label_column_in_csv]
+        ground_truth_columns_conf_mat = ['Label']
+        predicted_columns_conf_mat = ['cell_type']
+        datasets_to_avoid_overlap_with = ['Bone_Marrow_Cyto_train','Bone_Marrow_Cyto_val']
         associated_train_dataset_name = 'Bone_Marrow_Cyto_train'
         
     elif dataset_name == 'WBCAtt':
