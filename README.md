@@ -28,12 +28,19 @@ Subfolder vlm_models contains the VLM models API inquiry codes for each model.
 - root_folder    
     - Datasets
         - dataset_name
-            dataset_name_labels.csv
-            dataset_name_labels.xlsx
             dataset_name_abbreviation_dictionary.csv
-            ...
-            images
-            ...
+            - train
+                dataset_name_train_labels.csv
+                dataset_name_train_labels.xlsx            
+                ...
+                images
+                ...
+                ...
+            - val                
+                ...
+            - test
+                ...
+            
     - Results
         overview results across all datasets and models
         - dataset_name
