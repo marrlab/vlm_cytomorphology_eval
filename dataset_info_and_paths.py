@@ -21,7 +21,7 @@ def get_global_info():
             - plots_root_folder_path (str): Path to root folder for plots
     """
 
-    available_datasets = ['AML_Matek', 'Bone_Marrow_Cyto', 'WBCAtt']
+    available_datasets = ['AML_Matek', 'Bone_Marrow_Cyto', 'WBCAtt', 'Acevedo']
     available_task_types = ['0shot_classification', 'nonstructured']
     available_model_families = ['gemini', 'gpt', 'llama']
     available_models = ['gemini-2.0-flash-exp', 'gpt-4o', 'llama-3.2-multimodal-11B']
@@ -93,7 +93,7 @@ def get_dataset_info(dataset_name, dataset_type):
             - vlm_eval_subset_folder_path (str): Path to selected sub-dataset folder for VLM evaluation
             - vlm_eval_subset_labels_path (str): Path to the labels file for the VLM evaluation subset
             - abbreviation_dict_path (str): Path to CSV mapping label codes to names 
-            - vlm_eval_subset_oline_location (str): Path to the Oline location of the VLM evaluation subset
+            - vlm_eval_subset_oline_locations (str): Path to the Oline locations of the VLM evaluation subset - if a list is given, assumes that first 1000 cells are at the first location and so on
             - results_folder_path (str): Path to save results folder            
             - plots_folder_path (str): Path to save plots folder  
             - paths_column_in_csv (str or int): Column name in the dataset CSV that contains image paths
@@ -117,7 +117,7 @@ def get_dataset_info(dataset_name, dataset_type):
     vlm_eval_subset_labels_path = os.path.join(vlm_eval_subset_folder_path, f'{dataset_name}_{dataset_type}_labels.csv')
     abbreviation_dict_path = os.path.join(os.path.dirname(vlm_eval_subset_folder_path), f'{dataset_name}_abbreviation_dictionary.csv')
 
-    vlm_eval_subset_oline_location = None
+    vlm_eval_subset_oline_locations = None
 
     if dataset_type == 'test':
         n_samples_per_label = 50
@@ -188,16 +188,26 @@ def get_dataset_info(dataset_name, dataset_type):
 
 
         if dataset_type == 'train':
-            vlm_eval_subset_oline_location = ''
+            vlm_eval_subset_oline_locations = ''
         elif dataset_type == 'val':
-            vlm_eval_subset_oline_location = ''
+            vlm_eval_subset_oline_locations = ''
         elif dataset_type == 'test':
-            vlm_eval_subset_oline_location = ''
+            vlm_eval_subset_oline_locations = ''
             
 
         paths_column_in_csv = 'path'
         sampling_label_column_in_csv = 'label'
-        which_classes = 'all' # Which labels to include in the dataset (for example in this case all cell types)
+        which_classes = ['Band Neutrophil',
+             'Basophil',
+             'Eosinophil',
+             'Erythroblast',
+             'Lymphocyte',
+             'Metamyelocyte',
+             'Monocyte',
+             'Myelocyte',
+             'Platelet',
+             'Promyelocyte',
+             'Segmented Neutrophil'] # Which labels to include in the dataset (for example in this case all cell types)
         column_labels_to_keep=[sampling_label_column_in_csv]
         ground_truth_columns_conf_mat = ['label']
         predicted_columns_conf_mat = ['cell_type']
@@ -254,7 +264,7 @@ def get_dataset_info(dataset_name, dataset_type):
                     'vlm_eval_subset_folder_path': vlm_eval_subset_folder_path,
                     'vlm_eval_subset_labels_path': vlm_eval_subset_labels_path,
                     'abbreviation_dict_path': abbreviation_dict_path,
-                    'vlm_eval_subset_oline_location': vlm_eval_subset_oline_location,
+                    'vlm_eval_subset_oline_locations': vlm_eval_subset_oline_locations,
                     'results_folder_path': results_folder_path,
                     'plots_folder_path': plots_folder_path,  
                     'n_samples_per_label': n_samples_per_label,
