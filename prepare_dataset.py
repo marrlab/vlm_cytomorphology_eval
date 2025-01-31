@@ -138,7 +138,7 @@ def sample_data_subset(
             
             # Append to the folder's dataframe
             folder_dfs[folder_name] = pd.concat(
-                [folder_dfs[folder_name], selected_rows[[paths_column_in_csv] + column_labels_to_keep].rename(columns={paths_column_in_csv: "original_image_path", column_labels_to_keep: "label"})],
+                [folder_dfs[folder_name], selected_rows[[paths_column_in_csv] + column_labels_to_keep].rename(columns={paths_column_in_csv: "original_image_path", sampling_label_column_in_csv: "label"})],
                 ignore_index=True
             )
     

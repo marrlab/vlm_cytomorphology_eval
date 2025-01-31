@@ -129,6 +129,41 @@ def get_prompt(dataset_name: str, task_type: str, reviewed=False):
 
     prompt_Bone_Marrow_Cyto_nonstructured = {'cell_type': 'Consider the input image. Take a moment to think. Consider what features do the cells in the image have. Which of the white blood cell types listed below is shown? Write just the cell type and nothing else.'}
 
+    prompt_Acevedo_0shot_classification = {
+        "cell_type": """Consider the input image. Take a moment to think. Consider what features do the cells in the image have. Which of the white blood cell types listed below is shown? 
+    Write just the cell type and nothing else. Choose one of the possible labels provided below (exactly as written here):
+    Band Neutrophil
+    Basophil
+    Eosinophil
+    Erythroblast
+    Lymphocyte
+    Metamyelocyte
+    Monocyte
+    Myelocyte
+    Platelet
+    Promyelocyte
+    Segmented Neutrophil"""
+    }
+
+    prompt_Acevedo_0shot_classification_review = {
+        "cell_type": """Which of the classes listed below does the chatbot's answer regarding the cell type belong to? Write just the label (exacly as written below) and nothing else:
+    NA (Chatbot is unsure/ambiguious/doesn't know/no answer provided/class cannot be determined)
+    Band Neutrophil
+    Basophil
+    Eosinophil
+    Erythroblast
+    Lymphocyte
+    Metamyelocyte
+    Monocyte
+    Myelocyte
+    Platelet
+    Promyelocyte
+    Segmented Neutrophil"""
+    }
+        
+    prompt_Acevedo_nonstructured = {'cell_type': 'Consider the input image. Take a moment to think. Consider what features do the cells in the image have. Which type of white blood cell is shown? Write just the cell type and nothing else.'}
+
+
     prompt_WBCAtt_0shot_classification = {'label': """Consider the input image. Take a moment to think. Consider what features do the cells in the image have. Which of the white blood cell types listed below is shown? Write just the cell type and nothing else. Choose one of the possible labels provided below (exactly as written here):
     Neutrophil
     Eosinophil
@@ -284,6 +319,15 @@ def get_prompt(dataset_name: str, task_type: str, reviewed=False):
                 return prompt_Bone_Marrow_Cyto_0shot_classification_review
         elif task_type == 'nonstructured':
             return prompt_Bone_Marrow_Cyto_nonstructured
+
+    elif dataset_name == 'Acevedo':
+        if task_type == '0shot_classification':
+            if reviewed==False:
+                return prompt_Acevedo_0shot_classification
+            elif reviewed==True:
+                return prompt_Acevedo_0shot_classification_review
+        elif task_type == 'nonstructured':
+            return prompt_Acevedo_nonstructured
 
     elif dataset_name == 'WBCAtt':
         if task_type == '0shot_classification':

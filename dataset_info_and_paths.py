@@ -44,6 +44,7 @@ def get_global_info():
 
 
     vlm_eval_subsets_root_folder_path = os.path.join(root_folder_path, 'Datasets')
+    github_upload_root_folder_path = os.path.join(vlm_eval_subsets_root_folder_path, 'Upload_To_Git')
     results_root_folder_path = os.path.join(root_folder_path, 'Results')
     plots_root_folder_path = os.path.join(root_folder_path, 'Plots')
 
@@ -56,6 +57,7 @@ def get_global_info():
     global_info = {'cluster_local': cluster_local,
                    'root_folder_path': root_folder_path,
                    'vlm_eval_subsets_root_folder_path': vlm_eval_subsets_root_folder_path,
+                   'github_upload_root_folder_path': github_upload_root_folder_path,
                    'results_root_folder_path': results_root_folder_path,
                    'plots_root_folder_path': plots_root_folder_path,
                    'available_datasets': available_datasets,
@@ -188,12 +190,18 @@ def get_dataset_info(dataset_name, dataset_type):
 
 
         if dataset_type == 'train':
-            vlm_eval_subset_oline_locations = ''
+            vlm_eval_subset_oline_locations = ['https://raw.githubusercontent.com/ivankukuljan/Acevedo_train_1/refs/heads/main/', 
+                'https://raw.githubusercontent.com/ivankukuljan/Acevedo_train_2/refs/heads/main/',
+                'https://raw.githubusercontent.com/ivankukuljan/Acevedo_train_3/refs/heads/main/']
+            n_samples_per_label = 200
         elif dataset_type == 'val':
-            vlm_eval_subset_oline_locations = ''
+            vlm_eval_subset_oline_locations = 'https://raw.githubusercontent.com/ivankukuljan/Acevedo_val_1/refs/heads/main/'
+            n_samples_per_label = 50
         elif dataset_type == 'test':
             vlm_eval_subset_oline_locations = ''
+            n_samples_per_label = 50
             
+        abbreviation_dict_path = None            
 
         paths_column_in_csv = 'path'
         sampling_label_column_in_csv = 'label'
@@ -302,16 +310,20 @@ def get_vlm_eval_subset_folder_path(dataset_name, dataset_type):
 
     return vlm_eval_subset_folder_path
 
-def get_fine_tuning_jsonl_path(n_train_samples_per_label, dataset_name, dataset_type, task_type, model_family):
+def get_fine_tuning_subset_paths(n_train_samples_per_label, dataset_name, dataset_type, task_type, model_family):
     """
-    Get path to fine tuning jsonl file based on dataset and cluster/local.
+    Get path to fine tuning subsets - both jsonl and csv.
     """
 
     vlm_eval_subset_folder_path = get_vlm_eval_subset_folder_path(dataset_name, dataset_type)
 
     fine_tuning_jsonl_path = os.path.join(vlm_eval_subset_folder_path, f'fine_tuning_{dataset_name}_{dataset_type}_task_type_{task_type}_model_family_{model_family}_n_per_label_{n_train_samples_per_label}.jsonl')
+    fine_tuning_csv_path = os.path.join(vlm_eval_subset_folder_path, f'fine_tuning_{dataset_name}_{dataset_type}_n_per_label_{n_train_samples_per_label}.csv')
+    
+    finetuning_paths = {'fine_tuning_jsonl_path': fine_tuning_jsonl_path,
+                        'fine_tuning_csv_path': fine_tuning_csv_path}
 
-    return fine_tuning_jsonl_path
+    return finetuning_paths
 
 
 def get_results_folder_path(dataset_name):
