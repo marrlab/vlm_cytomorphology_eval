@@ -36,21 +36,22 @@ def get_dino_bloom(modelpath="/content/dinobloom-b.pth",modelname="dinov2_vitb14
     # load the original DINOv2 model with the correct architecture and parameters.
     model=torch.hub.load('facebookresearch/dinov2', modelname)
     # load finetuned weights
-    pretrained = torch.load(modelpath, map_location=torch.device('cpu'))
-    # make correct state dict for loading
-    new_state_dict = {}
-    for key, value in pretrained['teacher'].items():
-        if 'dino_head' in key or "ibot_head" in key:
-            pass
-        else:
-            new_key = key.replace('backbone.', '')
-            new_state_dict[new_key] = value
+    if modelpath is not None:
+        pretrained = torch.load(modelpath, map_location=torch.device('cpu'))
+        # make correct state dict for loading
+        new_state_dict = {}
+        for key, value in pretrained['teacher'].items():
+            if 'dino_head' in key or "ibot_head" in key:
+                pass
+            else:
+                new_key = key.replace('backbone.', '')
+                new_state_dict[new_key] = value
 
-    #corresponds to 224x224 image. patch size=14x14 => 16*16 patches
-    pos_embed = torch.nn.Parameter(torch.zeros(1, 257, embed_size))
-    model.pos_embed = pos_embed
+        #corresponds to 224x224 image. patch size=14x14 => 16*16 patches
+        pos_embed = torch.nn.Parameter(torch.zeros(1, 257, embed_size))
+        model.pos_embed = pos_embed
 
-    model.load_state_dict(new_state_dict, strict=True)
+        model.load_state_dict(new_state_dict, strict=True)
     return model
 # -------------------------
 # 1. Custom Dataset
@@ -288,7 +289,7 @@ def main():
     parser.add_argument('--batch_size', type=int, default=32, help="Mini-batch size")
     parser.add_argument('--lr', type=float, default=1e-3, help="Learning rate")
     parser.add_argument('--modelname', type=str, default='dinov2_vits14', help="Model name")
-    parser.add_argument('--modelpath', type=str, default='DinoBloom-S.pth', help="Model path")
+    parser.add_argument('--modelpath', type=str, default=None, help="Model path")
     parser.add_argument('--results_path', type=str, default='RESULTS-DINO', help="root dir of results saving")
     args = parser.parse_args()
 
@@ -299,11 +300,14 @@ def main():
     train_csv = args.train_csv  
     val_csv = args.val_csv    
     test_csv = args.test_csv
+    modelpath = args.modelpath if args.modelpath != "None" else None
 
     num_of_train_sample = len(pd.read_csv(train_csv))
     num_of_train_sample = int(num_of_train_sample//len(pd.read_csv(train_csv).label.unique()))
-
-    RESULTS = Path(f'{args.results_path}/Results_{num_of_train_sample}')
+    if modelpath is not None:
+        RESULTS = Path(f'{args.results_path}/Results_{num_of_train_sample}')
+    else:
+        RESULTS = Path(f'{args.results_path}/Results_{num_of_train_sample}_baseline')
     RESULTS.mkdir(parents=True, exist_ok=True)
 
     # Create datasets and dataloaders
@@ -316,7 +320,6 @@ def main():
     num_classes = len(pd.read_csv(train_csv)['label'].unique())
 
     # Load the pre-trained ViT model
-    modelpath = args.modelpath
     modelname = args.modelname
     embed_sizes={"dinov2_vits14": 384,
         "dinov2_vitb14": 768,
