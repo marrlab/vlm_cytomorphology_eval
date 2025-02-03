@@ -153,11 +153,11 @@ model_family='gpt'
 
 dataset_type = 'train'
 
-for n_train_samples_per_label in [1, 5, 10, 25, 50,100,200]:
+for n_train_samples_per_label in [90]: #[1, 5, 10, 25, 50,100,200]:
     prepare_fine_tuning_jsonl_and_csv(n_train_samples_per_label, dataset_name, dataset_type, task_type, model_family)
 
-dataset_type = 'val'
+# dataset_type = 'val'
 
-n_train_samples_per_label = 50
+# n_train_samples_per_label = 50
 
-prepare_fine_tuning_jsonl_and_csv(n_train_samples_per_label, dataset_name, dataset_type, task_type, model_family)
+# prepare_fine_tuning_jsonl_and_csv(n_train_samples_per_label, dataset_name, dataset_type, task_type, model_family)
