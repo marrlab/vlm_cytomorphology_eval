@@ -79,6 +79,49 @@ def gpt_api_text_inquiry(prompt_text, vlm_name='gpt-4o', **kwargs):
     
     return answer, usage
 
+def gpt_multiimage_api_visual_inquiry(image_paths, prompt_texts, vlm_name='gpt-4o', **kwargs):
+
+    def prepare_messages(prompt_texts, image_paths, detail="low"):
+        messages = [
+            {
+                "role": "user",
+                "content": []
+            }
+        ]
+        
+        for prompt_text, image_path in zip(prompt_texts, image_paths):
+            # Getting the base64 string
+            base64_image = encode_image(image_path)
+
+            messages[0]["content"].append({"type": "text", "text": prompt_text})
+            messages[0]["content"].append({
+                "type": "image_url",
+                "image_url": {
+                    "url": f"data:image/jpeg;base64,{base64_image}",
+                    "detail": detail
+                }
+            })
+        
+        return messages
+    
+    # Set default detail if not provided in kwargs
+    detail = kwargs.get('detail', 'low')
+
+    messages = prepare_messages(prompt_texts, image_paths, detail)
+    
+    response = client.chat.completions.create(
+      model=vlm_name, #"gpt-4o-mini"
+      messages=messages
+    )
+    
+    answer=response.choices[0].message.content
+    
+    
+    # Extract and print token usage
+    usage = response.usage.total_tokens
+    
+    return answer, usage
+
 
 def gpt_api_finetuning_entry(prompt_text, image_url, ground_truth_label):
 
@@ -107,4 +150,10 @@ def gpt_api_finetune(train_fine_tuning_jsonl_path, val_fine_tuning_jsonl_path, n
             }
         }
     )
+    
+    
+# image_paths = ['/home/ivan/Downloads/image1.jpeg','/home/ivan/Downloads/image2.jpeg']
+# prompt_texts = ["What is shown on the first image? What is the name of the file of the first image? What is the size of the image in pixels?","What is shown on the second image? What is the name of the file of the second image? What is the size of the image in pixels?"]
+    
+# answer, usage = gpt_multiimage_api_visual_inquiry(image_paths, prompt_texts)
 

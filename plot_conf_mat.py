@@ -481,6 +481,24 @@ def plot_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, compute_c
 # for reviewed in [False,True]:
 #     plot_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, compute_confmat_from_scratch=compute_confmat_from_scratch)
 
+# compute_confmat_from_scratch = True
+# dataset_name = 'Acevedo'
+# task_type = '0shot_classification'
+# reviewed = False
+
+# vlms= ['gpt-4o',
+#                     'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-1:AwdygYO3',
+#                     'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-5:Awe2yBGI',
+#                     'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-10:AweEXbUp',
+#                     'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-25:AwfgA0tK',
+#                     'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-50:Awfmw6Cp',
+#                     'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-100:AwoQsgDv']
+
+# for vlm_name in vlms:
+#     plot_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, compute_confmat_from_scratch=compute_confmat_from_scratch)
+
+# report_score_metrics(task_type, reviewed, file_type_extension='png')
+
 if __name__ == '__main__':
     compute_confmat_from_scratch = True
     global_info = get_global_info()

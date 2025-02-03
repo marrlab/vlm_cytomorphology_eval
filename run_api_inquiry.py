@@ -221,8 +221,7 @@ if __name__ == "__main__":
     import argparse
     
     parser = argparse.ArgumentParser(description='Run VLM model evaluation on cytomorphology datasets')
-    parser.add_argument('--vlm_name', type=str, choices=get_global_info()['available_models'],
-                      help='Name of VLM model to use.')
+    parser.add_argument('--vlm_name', type=str, help='Name of VLM model to use.')
     parser.add_argument('--dataset_name', type=str, choices=get_global_info()['available_datasets'],
                       help='Name of dataset to evaluate.')
     parser.add_argument('--task_type', type=str, choices=get_global_info()['available_task_types'],
