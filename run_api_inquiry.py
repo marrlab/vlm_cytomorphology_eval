@@ -57,11 +57,11 @@ class ModelImporter:
             self.api_multiimage_inquiry = gpt_multiimage_api_visual_inquiry
             self.sleep_time = 1
         elif 'gemini' in self.vlm_name:
-            from vlm_models.gemini_api import gemini_api_visual_inquiry, gemini_api_text_inquiry
+            from vlm_models.gemini_api import gemini_api_visual_inquiry, gemini_api_text_inquiry, gemini_multiimage_api_visual_inquiry
             self.kwargs = {}
             self.api_visual_inquiry = gemini_api_visual_inquiry
             self.api_text_inquiry = gemini_api_text_inquiry
-            self.api_multiimage_inquiry = None #gemini_multiimage_api_visual_inquiry
+            self.api_multiimage_inquiry = gemini_multiimage_api_visual_inquiry
             self.sleep_time = 1
         elif 'llama' in self.vlm_name:
             from vlm_models.llama_api import load_llama_model, llama_api_visual_inquiry, llama_api_text_inquiry
@@ -406,7 +406,7 @@ def run_api_review(vlm_name: str, dataset_name: str, task_type: str, **kwargs):
     return reviewed_answers_df, total_tokens_used_review_df
 
 for dataset_name in ['AML_Matek', 'Bone_Marrow_Cyto', 'WBCAtt', 'Acevedo']:
-    vlm_name = 'gpt-4o' # 'blabla'
+    vlm_name = 'gemini-2.0-flash-exp' #'gpt-4o' # 'blabla'
     task_type = '1shot_classification'
     run_api_1shot_prompt_classification(vlm_name, dataset_name)
     # run_api_review(vlm_name, dataset_name, task_type)

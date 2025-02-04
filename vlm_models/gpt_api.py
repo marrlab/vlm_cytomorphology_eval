@@ -81,6 +81,9 @@ def gpt_api_text_inquiry(prompt_text, vlm_name='gpt-4o', **kwargs):
 
 def gpt_multiimage_api_visual_inquiry(image_paths, prompt_texts, vlm_name='gpt-4o', **kwargs):
 
+    if len(image_paths) != len(prompt_texts):
+        raise ValueError("The number of image paths and prompt texts must be the same.")
+
     def prepare_messages(prompt_texts, image_paths, detail="low"):
         messages = [
             {

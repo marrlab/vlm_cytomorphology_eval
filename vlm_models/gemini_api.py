@@ -28,6 +28,28 @@ def gemini_api_visual_inquiry(image_path, prompt_text, vlm_name='gemini-2.0-flas
     
     return answer, usage
 
+def gemini_multiimage_api_visual_inquiry(image_paths, prompt_texts, vlm_name='gemini-2.0-flash-exp', **kwargs): #'gemini-1.5-pro'
+
+    if len(image_paths) != len(prompt_texts):
+        raise ValueError("The number of image paths and prompt texts must be the same.")
+
+    messages = []
+
+    for image_path, prompt_text in zip(image_paths, prompt_texts):  
+        image = PIL.Image.open(image_path)
+
+        messages.append(image)
+        messages.append(prompt_text)
+        
+    #Choose a Gemini model.
+    model = genai.GenerativeModel(model_name=vlm_name)
+
+    response = model.generate_content(messages)
+
+    answer = response.text
+    usage = response.usage_metadata.total_token_count
+    
+    return answer, usage
 
 def gemini_api_text_inquiry(prompt_text, vlm_name='gemini-2.0-flash-exp', **kwargs): #'gemini-1.5-pro'
 
@@ -41,6 +63,11 @@ def gemini_api_text_inquiry(prompt_text, vlm_name='gemini-2.0-flash-exp', **kwar
     
     return answer, usage
 
+
+# image_paths = ['/home/ivan/Downloads/image1.jpeg','/home/ivan/Downloads/image2.jpeg']
+# prompt_texts = ["What is shown on the first image? What is the name of the file of the first image? What is the size of the image in pixels?","What is shown on the second image? What is the name of the file of the second image? What is the size of the image in pixels?"]
+    
+# answer, usage = gemini_multiimage_api_visual_inquiry(image_paths, prompt_texts)
 
 
 # image_path = '/home/ivan/Helmholtz/VLMevaluation/Datasets/AML_Matek_structured/image_1.png'
