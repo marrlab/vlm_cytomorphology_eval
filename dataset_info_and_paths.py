@@ -22,7 +22,7 @@ def get_global_info():
     """
 
     available_datasets = ['AML_Matek', 'Bone_Marrow_Cyto', 'WBCAtt', 'Acevedo']
-    available_task_types = ['0shot_classification', 'nonstructured']
+    available_task_types = ['0shot_classification','1shot_classification', 'nonstructured']
     available_model_families = ['gemini', 'gpt', 'llama']
     available_models = ['gemini-2.0-flash-exp', 'gpt-4o', 'llama-3.2-multimodal-11B',
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-1:AwdygYO3',
@@ -30,7 +30,8 @@ def get_global_info():
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-10:AweEXbUp',
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-25:AwfgA0tK',
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-50:Awfmw6Cp',
-                        'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-100:AwoQsgDv']
+                        'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-100:AwoQsgDv',
+                        'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-50-auto:AwvXEh3K']
     recommended_models = {'gemini': 'gemini-2.0-flash-exp',
                           'gpt': 'gpt-4o',
                           'llama': 'llama-3.2-multimodal-11B'}
