@@ -10,6 +10,12 @@
 #SBATCH --mem=60G
 #SBATCH -q gpu_normal
 
+
+if [ -z "$N" ]; then
+  echo "Error: N is not set. Use sbatch --export=N=VALUE run_finetuneDino.sh"
+  exit 1
+fi
+
 # Environment setup
 source $HOME/.bashrc
 
@@ -21,11 +27,10 @@ export PYTHONPATH=/lustre/groups/labs/marr/qscd01/workspace/furkan.dasdelen/vlm_
 conda activate superbloom
 
 # set checkpoint to evaluate as input 
-python -u fine_tune_Dino.py --train_csv /lustre/groups/labs/marr/qscd01/projects/cytology_vlm_eval/Datasets/Acevedo/train/fine_tuning_Acevedo_train_n_per_label_200.csv \
+python -u fine_tune_Dino.py --train_csv /lustre/groups/labs/marr/qscd01/projects/cytology_vlm_eval/Datasets/Acevedo/train/fine_tuning_Acevedo_train_n_per_label_${N}.csv \
 							--val_csv /lustre/groups/labs/marr/qscd01/projects/cytology_vlm_eval/Datasets/Acevedo/val/Acevedo_val_labels.csv \
 							--test_csv /lustre/groups/labs/marr/qscd01/projects/cytology_vlm_eval/Datasets/Acevedo/test/Acevedo_test_labels.csv \
 							--epochs 100 \
 							--modelname dinov2_vits14 \
-							--modelpath /lustre/groups/labs/marr/qscd01/workspace/furkan.dasdelen/Beluga_cell_classifier/DinoBloom-S.pth \
 							--results_path Results \
 							> logs/output_finetuneDino.txt
