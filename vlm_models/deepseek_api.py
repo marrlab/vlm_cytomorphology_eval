@@ -6,12 +6,6 @@ Created on Mon Dec 16 15:17:37 2024
 @author: ivan
 """
 
-
-import PIL.Image
-import os
-import google.generativeai as genai
-
-
 import torch
 from transformers import AutoModelForCausalLM
 
