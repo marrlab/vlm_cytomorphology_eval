@@ -146,33 +146,24 @@ def llama_api_text_inquiry(prompt_text, vlm_name='llama-3.2-multimodal-11B', **k
 
 
 def llama_multiimage_api_visual_inquiry(image_paths, prompt_texts, vlm_name='llama-3.2-multimodal-11B', **kwargs):
-    ### Not finished!!!
 
     if len(image_paths) != len(prompt_texts):
         raise ValueError("The number of image paths and prompt texts must be the same.")
 
-    def prepare_messages(prompt_texts, image_paths, detail="low"):
+    def prepare_messages(prompt_texts, image_paths):
+
+        images = [Image.open(image_path) for image_path in image_paths]
         messages = [
             {
                 "role": "user",
                 "content": []
             }
-        ]
-        
-        for prompt_text, image_path in zip(prompt_texts, image_paths):
-            # Getting the base64 string
-            base64_image = encode_image(image_path)
-
+        ]        
+        for prompt_text, image in zip(prompt_texts, images):
+            messages[0]["content"].append({"type": "image", "image": image})
             messages[0]["content"].append({"type": "text", "text": prompt_text})
-            messages[0]["content"].append({
-                "type": "image_url",
-                "image_url": {
-                    "url": f"data:image/jpeg;base64,{base64_image}",
-                    "detail": detail
-                }
-            })
         
-        return messages
+        return messages, images
 
     model = kwargs.get('model')
     processor = kwargs.get('processor')
@@ -180,17 +171,12 @@ def llama_multiimage_api_visual_inquiry(image_paths, prompt_texts, vlm_name='lla
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    image = Image.open(image_path)
+    messages, images = prepare_messages(prompt_texts, image_paths)
 
-    messages = [
-        {"role": "user", "content": [
-            {"type": "image"},
-            {"type": "text", "text": prompt_text}
-        ]}
-    ]
     input_text = processor.apply_chat_template(messages, add_generation_prompt=True)
+
     inputs = processor(
-        image,
+        images,
         input_text,
         add_special_tokens=False,
         return_tensors="pt"
