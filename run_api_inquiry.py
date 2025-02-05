@@ -405,11 +405,11 @@ def run_api_review(vlm_name: str, dataset_name: str, task_type: str, **kwargs):
     
     return reviewed_answers_df, total_tokens_used_review_df
 
-for dataset_name in ['AML_Matek', 'Bone_Marrow_Cyto', 'WBCAtt', 'Acevedo']:
-    vlm_name = 'gemini-2.0-flash-exp' #'gpt-4o' # 'blabla'
-    task_type = '1shot_classification'
-    run_api_1shot_prompt_classification(vlm_name, dataset_name)
-    # run_api_review(vlm_name, dataset_name, task_type)
+# for dataset_name in ['AML_Matek', 'Bone_Marrow_Cyto', 'WBCAtt', 'Acevedo']:
+#     vlm_name = 'gemini-2.0-flash-exp' #'gpt-4o' # 'blabla'
+#     task_type = '1shot_classification'
+#     run_api_1shot_prompt_classification(vlm_name, dataset_name)
+#     # run_api_review(vlm_name, dataset_name, task_type)
 
 
 
@@ -419,24 +419,24 @@ for dataset_name in ['AML_Matek', 'Bone_Marrow_Cyto', 'WBCAtt', 'Acevedo']:
 # run_api_0shot_classification(vlm_name, dataset_name)
 
 
-# if __name__ == "__main__":
-#     import argparse
+if __name__ == "__main__":
+    import argparse
     
-#     parser = argparse.ArgumentParser(description='Run VLM model evaluation on cytomorphology datasets')
-#     parser.add_argument('--vlm_name', type=str, help='Name of VLM model to use.')
-#     parser.add_argument('--dataset_name', type=str, choices=get_global_info()['available_datasets'],
-#                       help='Name of dataset to evaluate.')
-#     parser.add_argument('--task_type', type=str, choices=get_global_info()['available_task_types'],
-#                       help='Type of task to evaluate.')
-#     parser.add_argument('--run_review', type=int, default=0,
-#                       help='Whether to also run review after inquiry')
+    parser = argparse.ArgumentParser(description='Run VLM model evaluation on cytomorphology datasets')
+    parser.add_argument('--vlm_name', type=str, help='Name of VLM model to use.')
+    parser.add_argument('--dataset_name', type=str, choices=get_global_info()['available_datasets'],
+                      help='Name of dataset to evaluate.')
+    parser.add_argument('--task_type', type=str, choices=get_global_info()['available_task_types'],
+                      help='Type of task to evaluate.')
+    parser.add_argument('--run_review', type=int, default=0,
+                      help='Whether to also run review after inquiry')
 
-#     args = parser.parse_args()
+    args = parser.parse_args()
 
-#     if args.task_type == '0shot_classification':
-#         # Run the API inquiry
-#         run_api_0shot_classification(args.vlm_name, args.dataset_name)
+    if args.task_type == '0shot_classification':
+        # Run the API inquiry
+        run_api_0shot_classification(args.vlm_name, args.dataset_name)
         
-#     # Optionally run review
-#     if args.run_review:
-#         run_api_review(args.vlm_name, args.dataset_name, args.task_type)
+    # Optionally run review
+    if args.run_review:
+        run_api_review(args.vlm_name, args.dataset_name, args.task_type)
