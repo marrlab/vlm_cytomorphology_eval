@@ -18,7 +18,7 @@ from transformers import AutoModelForCausalLM
 from deepseek_vl2.models import DeepseekVLV2Processor, DeepseekVLV2ForCausalLM
 from deepseek_vl2.utils.io import load_pil_images
 
-def load_deep_seek_model(vlm_name='deepseek-vl2-small'):
+def load_deepseek_model(vlm_name='deepseek-vl2-small'):
 
 
     if vlm_name == 'deepseek-vl2-tiny':
@@ -40,7 +40,7 @@ def load_deep_seek_model(vlm_name='deepseek-vl2-small'):
 
 
 
-def deep_seek_api_visual_inquiry(image_path, prompt_text, vlm_name='DeepSeek-VL2-small', **kwargs): #'gemini-1.5-pro'
+def deepseek_api_visual_inquiry(image_path, prompt_text, vlm_name='deepseek-vl2-small', **kwargs): #'gemini-1.5-pro'
 
     vl_gpt = kwargs.get('vl_gpt')
     tokenizer = kwargs.get('tokenizer')
@@ -89,7 +89,7 @@ def deep_seek_api_visual_inquiry(image_path, prompt_text, vlm_name='DeepSeek-VL2
 
     return answer, usage
 
-def deep_seek_api_text_inquiry(prompt_text, vlm_name='DeepSeek-VL2-small', **kwargs):
+def deepseek_api_text_inquiry(prompt_text, vlm_name='deepseek-vl2-small', **kwargs):
 
     vl_gpt = kwargs.get('vl_gpt')
     tokenizer = kwargs.get('tokenizer')
@@ -139,7 +139,7 @@ def deep_seek_api_text_inquiry(prompt_text, vlm_name='DeepSeek-VL2-small', **kwa
     return answer, usage
 
 
-def deep_multiimage_api_visual_inquiry(image_paths, prompt_texts, vlm_name='DeepSeek-VL2-small', **kwargs): #'gemini-1.5-pro'
+def deepseek_multiimage_api_visual_inquiry(image_paths, prompt_texts, vlm_name='deepseek-vl2-small', **kwargs): #'gemini-1.5-pro'
 
     if len(image_paths) != len(prompt_texts):
         raise ValueError("The number of image paths and prompt texts must be the same.")
