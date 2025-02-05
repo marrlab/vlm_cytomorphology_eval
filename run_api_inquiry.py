@@ -71,6 +71,14 @@ class ModelImporter:
             self.api_text_inquiry = llama_api_text_inquiry
             self.api_multiimage_inquiry = None #llama_multiimage_api_visual_inquiry
             self.sleep_time = 0.2
+        elif 'deepseek' in self.vlm_name:
+            from vlm_models.deep_seek_api import load_deep_seek_model,deep_seek_api_visual_inquiry, deep_seek_api_text_inquiry, deep_seek_api_multiimage_inquiry
+            vl_gpt, tokenizer = load_deep_seek_model(vlm_name=vlm_name)
+            self.kwargs = {'vl_gpt': vl_gpt, 'tokenizer': tokenizer, 'max_new_tokens': 20000}
+            self.api_visual_inquiry = deep_seek_api_visual_inquiry
+            self.api_text_inquiry = deep_seek_api_text_inquiry
+            self.api_multiimage_inquiry = deep_seek_api_multiimage_inquiry
+            self.sleep_time = 0.2
         else:
             raise ValueError(f"Model {self.vlm_name} not found")
             self.api_visual_inquiry = None
