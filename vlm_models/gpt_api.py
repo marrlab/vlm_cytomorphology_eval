@@ -130,7 +130,7 @@ def gpt_api_finetuning_entry(prompt_text, image_url, ground_truth_label):
 
     prompt_text = json.dumps(prompt_text)
 
-    entry = '{"messages": [{"role": "system", "content": "You are an assistant that identifies call types."}, {"role": "user", "content": ' + prompt_text + '}, {"role": "user", "content": [{"type": "image_url", "image_url": {"url": "' + image_url + '"}}]}, {"role": "assistant", "content": "' + ground_truth_label + '"}]}'
+    entry = '{"messages": [{"role": "system", "content": "You are an assistant that identifies cell types."}, {"role": "user", "content": ' + prompt_text + '}, {"role": "user", "content": [{"type": "image_url", "image_url": {"url": "' + image_url + '"}}]}, {"role": "assistant", "content": "' + ground_truth_label + '"}]}'
 
     # jsonl_entry = json.dumps(entry)
 
