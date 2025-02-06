@@ -32,5 +32,8 @@ python -u fine_tune_Dino.py --train_csv /lustre/groups/labs/marr/qscd01/projects
 							--test_csv /lustre/groups/labs/marr/qscd01/projects/cytology_vlm_eval/Datasets/Acevedo/test/Acevedo_test_labels.csv \
 							--epochs 100 \
 							--modelname dinov2_vits14 \
+							--modelpath ./DinoBloom-S.pth \
 							--results_path Results \
 							> logs/output_finetuneDino.txt
+
+#remove modelpath if want to test Dinov2baseline
