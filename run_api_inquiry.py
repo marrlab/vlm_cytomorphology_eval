@@ -64,12 +64,12 @@ class ModelImporter:
             self.api_multiimage_inquiry = gemini_multiimage_api_visual_inquiry
             self.sleep_time = 1
         elif 'llama' in self.vlm_name:
-            from vlm_models.llama_api import load_llama_model, llama_api_visual_inquiry, llama_api_text_inquiry
+            from vlm_models.llama_api import load_llama_model, llama_api_visual_inquiry, llama_api_text_inquiry, llama_multiimage_api_visual_inquiry
             model, processor = load_llama_model(self.vlm_name)
             self.kwargs = {'model': model, 'processor': processor, 'max_new_tokens': 20000}
             self.api_visual_inquiry = llama_api_visual_inquiry
             self.api_text_inquiry = llama_api_text_inquiry
-            self.api_multiimage_inquiry = None #llama_multiimage_api_visual_inquiry
+            self.api_multiimage_inquiry = llama_multiimage_api_visual_inquiry
             self.sleep_time = 0.2
         elif 'deepseek' in self.vlm_name:
             from vlm_models.deepseek_api import load_deepseek_model,deepseek_api_visual_inquiry, deepseek_api_text_inquiry, deepseek_multiimage_api_visual_inquiry
@@ -444,6 +444,8 @@ if __name__ == "__main__":
     if args.task_type == '0shot_classification':
         # Run the API inquiry
         run_api_0shot_classification(args.vlm_name, args.dataset_name)
+    elif args.task_type == '1shot_classification':
+        run_api_1shot_prompt_classification(args.vlm_name, args.dataset_name)
         
     # Optionally run review
     if args.run_review:
