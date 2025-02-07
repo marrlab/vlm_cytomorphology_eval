@@ -64,12 +64,20 @@ class ModelImporter:
             self.api_multiimage_inquiry = gemini_multiimage_api_visual_inquiry
             self.sleep_time = 1
         elif 'llama' in self.vlm_name:
-            from vlm_models.llama_api import load_llama_model, llama_api_visual_inquiry, llama_api_text_inquiry
+            from vlm_models.llama_api import load_llama_model, llama_api_visual_inquiry, llama_api_text_inquiry, llama_multiimage_api_visual_inquiry
             model, processor = load_llama_model(self.vlm_name)
             self.kwargs = {'model': model, 'processor': processor, 'max_new_tokens': 20000}
             self.api_visual_inquiry = llama_api_visual_inquiry
             self.api_text_inquiry = llama_api_text_inquiry
-            self.api_multiimage_inquiry = None #llama_multiimage_api_visual_inquiry
+            self.api_multiimage_inquiry = llama_multiimage_api_visual_inquiry
+            self.sleep_time = 0.2
+        elif 'deepseek' in self.vlm_name:
+            from vlm_models.deepseek_api import load_deepseek_model,deepseek_api_visual_inquiry, deepseek_api_text_inquiry, deepseek_multiimage_api_visual_inquiry
+            vl_gpt, tokenizer = load_deepseek_model(vlm_name=self.vlm_name)
+            self.kwargs = {'vl_gpt': vl_gpt, 'tokenizer': tokenizer, 'max_new_tokens': 20000}
+            self.api_visual_inquiry = deepseek_api_visual_inquiry
+            self.api_text_inquiry = deepseek_api_text_inquiry
+            self.api_multiimage_inquiry = deepseek_multiimage_api_visual_inquiry
             self.sleep_time = 0.2
         else:
             raise ValueError(f"Model {self.vlm_name} not found")
@@ -405,11 +413,11 @@ def run_api_review(vlm_name: str, dataset_name: str, task_type: str, **kwargs):
     
     return reviewed_answers_df, total_tokens_used_review_df
 
-for dataset_name in ['AML_Matek', 'Bone_Marrow_Cyto', 'WBCAtt', 'Acevedo']:
-    vlm_name = 'gemini-2.0-flash-exp' #'gpt-4o' # 'blabla'
-    task_type = '1shot_classification'
-    run_api_1shot_prompt_classification(vlm_name, dataset_name)
-    # run_api_review(vlm_name, dataset_name, task_type)
+# for dataset_name in ['AML_Matek', 'Bone_Marrow_Cyto', 'WBCAtt', 'Acevedo']:
+#     vlm_name = 'gemini-2.0-flash-exp' #'gpt-4o' # 'blabla'
+#     task_type = '1shot_classification'
+#     run_api_1shot_prompt_classification(vlm_name, dataset_name)
+#     # run_api_review(vlm_name, dataset_name, task_type)
 
 
 
@@ -419,24 +427,26 @@ for dataset_name in ['AML_Matek', 'Bone_Marrow_Cyto', 'WBCAtt', 'Acevedo']:
 # run_api_0shot_classification(vlm_name, dataset_name)
 
 
-# if __name__ == "__main__":
-#     import argparse
+if __name__ == "__main__":
+    import argparse
     
-#     parser = argparse.ArgumentParser(description='Run VLM model evaluation on cytomorphology datasets')
-#     parser.add_argument('--vlm_name', type=str, help='Name of VLM model to use.')
-#     parser.add_argument('--dataset_name', type=str, choices=get_global_info()['available_datasets'],
-#                       help='Name of dataset to evaluate.')
-#     parser.add_argument('--task_type', type=str, choices=get_global_info()['available_task_types'],
-#                       help='Type of task to evaluate.')
-#     parser.add_argument('--run_review', type=int, default=0,
-#                       help='Whether to also run review after inquiry')
+    parser = argparse.ArgumentParser(description='Run VLM model evaluation on cytomorphology datasets')
+    parser.add_argument('--vlm_name', type=str, help='Name of VLM model to use.')
+    parser.add_argument('--dataset_name', type=str, choices=get_global_info()['available_datasets'],
+                      help='Name of dataset to evaluate.')
+    parser.add_argument('--task_type', type=str, choices=get_global_info()['available_task_types'],
+                      help='Type of task to evaluate.')
+    parser.add_argument('--run_review', type=int, default=0,
+                      help='Whether to also run review after inquiry')
 
-#     args = parser.parse_args()
+    args = parser.parse_args()
 
-#     if args.task_type == '0shot_classification':
-#         # Run the API inquiry
-#         run_api_0shot_classification(args.vlm_name, args.dataset_name)
+    if args.task_type == '0shot_classification':
+        # Run the API inquiry
+        run_api_0shot_classification(args.vlm_name, args.dataset_name)
+    elif args.task_type == '1shot_classification':
+        run_api_1shot_prompt_classification(args.vlm_name, args.dataset_name)
         
-#     # Optionally run review
-#     if args.run_review:
-#         run_api_review(args.vlm_name, args.dataset_name, args.task_type)
+    # Optionally run review
+    if args.run_review:
+        run_api_review(args.vlm_name, args.dataset_name, args.task_type)

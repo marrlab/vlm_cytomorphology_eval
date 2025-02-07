@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import torch
+import random
 import torch.nn as nn
 import torch.optim as optim
 import torchvision.transforms as transforms
@@ -12,6 +13,12 @@ from PIL import Image
 from sklearn.metrics import accuracy_score, balanced_accuracy_score, f1_score
 from torch.utils.data import DataLoader, Dataset
 
+def set_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
 
 # Global definitions
 map_disease = {
@@ -93,8 +100,8 @@ IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
 # Training transform with augmentation
 train_transform = transforms.Compose([
     transforms.Resize((224, 224)),  
-    transforms.RandomHorizontalFlip(),
-    transforms.RandomRotation(90),
+    #transforms.RandomHorizontalFlip(),
+    #transforms.RandomRotation(90),
     transforms.ToTensor(),
     transforms.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD)
 ])
@@ -301,6 +308,8 @@ def main():
     val_csv = args.val_csv    
     test_csv = args.test_csv
     modelpath = args.modelpath if args.modelpath != "None" else None
+    
+    set_seed(seed=42)
 
     num_of_train_sample = len(pd.read_csv(train_csv))
     num_of_train_sample = int(num_of_train_sample//len(pd.read_csv(train_csv).label.unique()))

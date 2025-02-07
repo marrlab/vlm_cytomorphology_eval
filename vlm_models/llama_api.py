@@ -142,3 +142,53 @@ def llama_api_text_inquiry(prompt_text, vlm_name='llama-3.2-multimodal-11B', **k
     usage = 0 
 
     return answer, usage
+
+
+
+def llama_multiimage_api_visual_inquiry(image_paths, prompt_texts, vlm_name='llama-3.2-multimodal-11B', **kwargs):
+
+    if len(image_paths) != len(prompt_texts):
+        raise ValueError("The number of image paths and prompt texts must be the same.")
+
+    def prepare_messages(prompt_texts, image_paths):
+
+        images = [Image.open(image_path) for image_path in image_paths]
+        messages = [
+            {
+                "role": "user",
+                "content": []
+            }
+        ]        
+        for prompt_text, image in zip(prompt_texts, images):
+            messages[0]["content"].append({"type": "image", "image": image})
+            messages[0]["content"].append({"type": "text", "text": prompt_text})
+        
+        return messages, images
+
+    model = kwargs.get('model')
+    processor = kwargs.get('processor')
+    max_new_tokens = kwargs.get('max_new_tokens', 10000)  # Default to 10000 if not provided
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    messages, images = prepare_messages(prompt_texts, image_paths)
+
+    input_text = processor.apply_chat_template(messages, add_generation_prompt=True)
+
+    inputs = processor(
+        images,
+        input_text,
+        add_special_tokens=False,
+        return_tensors="pt"
+    ).to(model.device)
+
+    output = model.generate(**inputs, max_new_tokens=max_new_tokens)
+    answer = processor.decode(output[0])
+
+    # full_output = processor.decode(output)
+
+    # print(full_output)
+
+    usage = 0 
+
+    return answer, usage

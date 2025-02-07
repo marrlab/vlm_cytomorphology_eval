@@ -23,18 +23,20 @@ def get_global_info():
 
     available_datasets = ['AML_Matek', 'Bone_Marrow_Cyto', 'WBCAtt', 'Acevedo', 'HiCervix']
     available_task_types = ['0shot_classification','1shot_classification', 'nonstructured']
-    available_model_families = ['gemini', 'gpt', 'llama']
-    available_models = ['gemini-2.0-flash-exp', 'gpt-4o', 'llama-3.2-multimodal-11B',
+    available_model_families = ['gemini', 'gpt', 'llama', 'deepseek']
+    available_models = ['gemini-2.0-flash-exp', 'gpt-4o', 'llama-3.2-multimodal-11B', 'deepseek-vl2-tiny', 'deepseek-vl2-small',
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-1:AwdygYO3',
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-5:Awe2yBGI',
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-10:AweEXbUp',
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-25:AwfgA0tK',
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-50:Awfmw6Cp',
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-100:AwoQsgDv',
+                        'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-200:AxILVLLx',
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-50-auto:AwvXEh3K']
     recommended_models = {'gemini': 'gemini-2.0-flash-exp',
                           'gpt': 'gpt-4o',
-                          'llama': 'llama-3.2-multimodal-11B'}
+                          'llama': 'llama-3.2-multimodal-11B',
+                          'deepseek': 'deepseek-vl2-small'}
 
     CLUSTER_ROOT_FOLDER_PATH = '/lustre/groups/labs/marr/qscd01/projects/cytology_vlm_eval'
     LOCAL_ROOT_FOLDER_PATH = '/home/ivan/Helmholtz/VLMevaluation/'
