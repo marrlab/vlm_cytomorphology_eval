@@ -272,25 +272,23 @@ def get_dataset_info(dataset_name, dataset_type):
         predicted_columns_conf_mat = ground_truth_columns_conf_mat   
         #['label', 'cell_size', 'cell_shape', 'nucleus_shape', 'nuclear_cytoplasmic_ratio', 'chromatin_density', 'cytoplasm_vacuole', 'cytoplasm_texture', 'cytoplasm_colour', 'granule_type', 'granule_colour', 'granularity']        
 
- elif dataset_name == 'HiCervix':
+     elif dataset_name == 'HiCervix':
         published_dataset_location = 'https://zenodo.org/records/11087263'
         published_annotations_location = 'https://ieeexplore.ieee.org/document/10571965'
         if cluster_local == 'cluster':
-            original_full_dataset_path = '/lustre/groups/labs/marr/qscd01/datasets/papsmear_dataset_processed/HiCervix'
-            dataset_csv_path = '/lustre/groups/labs/marr/qscd01/datasets/papsmear_dataset_processed/HiCervix'
+            original_full_dataset_path = ''
+            dataset_csv_path = '/lustre/groups/labs/marr/qscd01/projects/cytology_vlm_eval/Datasets/HiCervix_path_labels.csv'
         elif cluster_local == 'local':
             original_full_dataset_path = None
             dataset_csv_path = '/Users/juliaschafer/Helmholtz/VLMevaluation/Datasets/papsmear_dataset_processed/HiCervix.csv'
 
-        n_samples_per_label = 8051
+        n_samples_per_label = 50
         paths_column_in_csv = 'Path'
         sampling_label_column_in_csv = 'Label'
         which_classes = 'all' 
-        column_labels_to_keep = 'Hierarchical data labels'
-        ground_truth_columns_conf_mat = column_labels_to_keep
-        predicted_columns_conf_mat = ground_truth_columns_conf_mat
-        dataset_to_avoid_overlap_with = None
-        associated_train_dataset_name = None
+        column_labels_to_keep=[sampling_label_column_in_csv]
+        ground_truth_columns_conf_mat = ['label']
+        predicted_columns_conf_mat = ['cell_type']
         
         abbreviation_dict_path = os.path.join(vlm_eval_subset_folder_path, f'{dataset_name}_abbreviation_dictionary.csv')
 
