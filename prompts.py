@@ -400,9 +400,9 @@ def get_prompt(dataset_name: str, task_type: str, reviewed=False):
   elif dataset_name == 'HiCervix':
         if task_type == '0shot_classification':
             if reviewed==False:
-                return prompt_WBCAtt_0shot_classification
+                return prompt_HiCervix_0shot_classification
             elif reviewed==True:
-                return prompt_WBCAtt_0shot_classification_review
+                return prompt_HiCervix_0shot_classification_review
         elif task_type == 'nonstructured':
             return None
 
