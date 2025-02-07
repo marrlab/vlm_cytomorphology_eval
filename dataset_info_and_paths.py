@@ -277,7 +277,7 @@ def get_dataset_info(dataset_name, dataset_type):
         published_annotations_location = 'https://ieeexplore.ieee.org/document/10571965'
         if cluster_local == 'cluster':
             original_full_dataset_path = ''
-            dataset_csv_path = '/lustre/groups/labs/marr/qscd01/datasets/papsmear_dataset_processed/HiCervix.cvs'
+            dataset_csv_path = '/lustre/groups/labs/marr/qscd01/projects/cytology_vlm_eval/Datasets/HiCervix_path_labels.csv'
         elif cluster_local == 'local':
             original_full_dataset_path = None
             dataset_csv_path = '/Users/juliaschafer/Helmholtz/VLMevaluation/Datasets/papsmear_dataset_processed/HiCervix.csv'
