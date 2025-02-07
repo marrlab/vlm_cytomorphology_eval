@@ -301,68 +301,64 @@ def get_prompt(dataset_name: str, task_type: str, reviewed=False):
     """,
     }
 
-    prompt_HiCervix_0shot_classification = {'cell_type': """Consider only the chatbot's answer and ignore any potentially attached images. Which of the classes listed below does the chatbot's answer regarding the cell type belong to? Write just the label (exacly as written below) and nothing else:
-    NA (Chatbot is unsure/ambiguious/doesn't know/no answer provided/class cannot be determined)
-    abb,Label
-    Normal,Normal cell
-    ECC,Endocervical cell
-    RPC,Repair cell
-    MPC,Metaplasia cell
-    PG,Pseudokoilocytes by glycogen    
-    Atrophy,Atrophy
-    EMC,Endometrial cell
-    HCG,Hyperchromatic crowded groups
-    ASC-US,Atypical squamous cells of undetermined significance
-    LSIL,Low-grade squamous intraepithelial lesion
-    ASC-H,Atypical squamous cells, cannot exclude high-grade squamous intraepithelial lesion
-    HSIL,High-grade squamous intraepithelial lesion
-    SCC,Squamous cell carcinoma
-    AGC,Atypical glandular cell
-    AGC-NOS,Atypical glandular cell- not otherwise specified
-    AGC-FN,Atypical glandular cell- favor neoplastic
-    ADC,Adenocarcinoma
-    AGC-ECC-NOS,Atypical glandular cell (endocervical cell)- not otherwise specified
-    AGC-EMC-NOS,Atypical glandular cell (endometrial cell)- not otherwise specified
-    ADC-ECC,Adenocarcinoma of endocervical cell
-    ADC-EMC,Adenocarcinoma of endometrial cell
-    Organisms,Organisms
-    FUNGI,Fungal organisms morphologically consistent with Candida spp.
-    ACTINO,Bacteria morphologically consistent with Actinomyces spp.
-    TRI,Trichomonas vaginalis
-    HSV,Cellular changes consistent with herpes simplex virus
-    CC,Coccobacilli/Shift in flora suggestive of bacterial vaginosis """,
+    prompt_HiCervix_0shot_classification = {'cell_type': """Consider the input image. Take a moment to think. Consider what features do cells in the image have. Which of the  types listed below is shown? 
+    Write just the cell type and nothing else. Choose one of the possible labels provided below (exactly as written here):
+    Normal cell
+    Endocervical cell
+    Repair cell
+    Metaplasia cell
+    Pseudokoilocytes by glycogen    
+    Atrophy
+    Endometrial cell
+    Hyperchromatic crowded groups
+    Atypical squamous cells of undetermined significance
+    Low-grade squamous intraepithelial lesion
+    Atypical squamous cells, cannot exclude high-grade squamous intraepithelial lesion
+    High-grade squamous intraepithelial lesion
+    Squamous cell carcinoma
+    Atypical glandular cell
+    Atypical glandular cell- not otherwise specified
+    Atypical glandular cell- favor neoplastic
+    Adenocarcinoma
+    Atypical glandular cell (endocervical cell)- not otherwise specified
+    Atypical glandular cell (endometrial cell)- not otherwise specified
+    Adenocarcinoma of endocervical cell
+    Adenocarcinoma of endometrial cell
+    Fungal organisms morphologically consistent with Candida spp.
+    Bacteria morphologically consistent with Actinomyces spp.
+    Trichomonas vaginalis
+    Cellular changes consistent with herpes simplex virus
+    Coccobacilli/Shift in flora suggestive of bacterial vaginosis """,
     }
 
     prompt_HiCervix_0shot_classification_review = {'cell_type': """Consider only the chatbot's answer and ignore any potentially attached images. Which of the classes listed below does the chatbot's answer regarding the cell type belong to? Write just the label (exacly as written below) and nothing else:
     NA (Chatbot is unsure/ambiguious/doesn't know/no answer provided/class cannot be determined)
-    abb,Label
-    Normal,Normal cell
-    ECC,Endocervical cell
-    RPC,Repair cell
-    MPC,Metaplasia cell
-    PG,Pseudokoilocytes by glycogen    
-    Atrophy,Atrophy
-    EMC,Endometrial cell
-    HCG,Hyperchromatic crowded groups
-    ASC-US,Atypical squamous cells of undetermined significance
-    LSIL,Low-grade squamous intraepithelial lesion
-    ASC-H,Atypical squamous cells, cannot exclude high-grade squamous intraepithelial lesion
-    HSIL,High-grade squamous intraepithelial lesion
-    SCC,Squamous cell carcinoma
-    AGC,Atypical glandular cell
-    AGC-NOS,Atypical glandular cell- not otherwise specified
-    AGC-FN,Atypical glandular cell- favor neoplastic
-    ADC,Adenocarcinoma
-    AGC-ECC-NOS,Atypical glandular cell (endocervical cell)- not otherwise specified
-    AGC-EMC-NOS,Atypical glandular cell (endometrial cell)- not otherwise specified
-    ADC-ECC,Adenocarcinoma of endocervical cell
-    ADC-EMC,Adenocarcinoma of endometrial cell
-    Organisms,Organisms
-    FUNGI,Fungal organisms morphologically consistent with Candida spp.
-    ACTINO,Bacteria morphologically consistent with Actinomyces spp.
-    TRI,Trichomonas vaginalis
-    HSV,Cellular changes consistent with herpes simplex virus
-    CC,Coccobacilli/Shift in flora suggestive of bacterial vaginosis""", }
+    Normal cell
+    Endocervical cell
+    Repair cell
+    Metaplasia cell
+    Pseudokoilocytes by glycogen    
+    Atrophy
+    Endometrial cell
+    Hyperchromatic crowded groups
+    Atypical squamous cells of undetermined significance
+    Low-grade squamous intraepithelial lesion
+    Atypical squamous cells, cannot exclude high-grade squamous intraepithelial lesion
+    High-grade squamous intraepithelial lesion
+    Squamous cell carcinoma
+    Atypical glandular cell
+    Atypical glandular cell- not otherwise specified
+    Atypical glandular cell- favor neoplastic
+    Adenocarcinoma
+    Atypical glandular cell (endocervical cell)- not otherwise specified
+    Atypical glandular cell (endometrial cell)- not otherwise specified
+    Adenocarcinoma of endocervical cell
+    Adenocarcinoma of endometrial cell
+    Fungal organisms morphologically consistent with Candida spp.
+    Bacteria morphologically consistent with Actinomyces spp.
+    Trichomonas vaginalis
+    Cellular changes consistent with herpes simplex virus
+    Coccobacilli/Shift in flora suggestive of bacterial vaginosis""", }
     
     if dataset_name == 'AML_Matek':
         if task_type == '0shot_classification':
