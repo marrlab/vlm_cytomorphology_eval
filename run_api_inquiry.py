@@ -62,7 +62,7 @@ class ModelImporter:
             self.api_visual_inquiry = gemini_api_visual_inquiry
             self.api_text_inquiry = gemini_api_text_inquiry
             self.api_multiimage_inquiry = gemini_multiimage_api_visual_inquiry
-            self.sleep_time = 1
+            self.sleep_time = 5 
         elif 'llama' in self.vlm_name:
             from vlm_models.llama_api import load_llama_model, llama_api_visual_inquiry, llama_api_text_inquiry, llama_multiimage_api_visual_inquiry
             model, processor = load_llama_model(self.vlm_name)
@@ -73,8 +73,8 @@ class ModelImporter:
             self.sleep_time = 0.2
         elif 'deepseek' in self.vlm_name:
             from vlm_models.deepseek_api import load_deepseek_model,deepseek_api_visual_inquiry, deepseek_api_text_inquiry, deepseek_multiimage_api_visual_inquiry
-            vl_gpt, tokenizer = load_deepseek_model(vlm_name=self.vlm_name)
-            self.kwargs = {'vl_gpt': vl_gpt, 'tokenizer': tokenizer, 'max_new_tokens': 20000}
+            vl_chat_processor, vl_gpt, tokenizer = load_deepseek_model(vlm_name=self.vlm_name)
+            self.kwargs = {'vl_chat_processor': vl_chat_processor, 'vl_gpt': vl_gpt, 'tokenizer': tokenizer, 'max_new_tokens': 20000}
             self.api_visual_inquiry = deepseek_api_visual_inquiry
             self.api_text_inquiry = deepseek_api_text_inquiry
             self.api_multiimage_inquiry = deepseek_multiimage_api_visual_inquiry

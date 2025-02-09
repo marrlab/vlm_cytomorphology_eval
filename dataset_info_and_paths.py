@@ -272,7 +272,7 @@ def get_dataset_info(dataset_name, dataset_type):
         predicted_columns_conf_mat = ground_truth_columns_conf_mat   
         #['label', 'cell_size', 'cell_shape', 'nucleus_shape', 'nuclear_cytoplasmic_ratio', 'chromatin_density', 'cytoplasm_vacuole', 'cytoplasm_texture', 'cytoplasm_colour', 'granule_type', 'granule_colour', 'granularity']        
 
-     elif dataset_name == 'HiCervix':
+    elif dataset_name == 'HiCervix':
         published_dataset_location = 'https://zenodo.org/records/11087263'
         published_annotations_location = 'https://ieeexplore.ieee.org/document/10571965'
         if cluster_local == 'cluster':

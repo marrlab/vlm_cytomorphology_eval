@@ -16,11 +16,11 @@ def load_deepseek_model(vlm_name='deepseek-vl2-small'):
 
 
     if vlm_name == 'deepseek-vl2-tiny':
-        model_path = os.path.join("deepseek-ai/deepseek-vl2-tiny")
+        model_path = "deepseek-ai/deepseek-vl2-tiny"
     elif vlm_name == 'deepseek-vl2-small':
-        model_path = os.path.join("deepseek-ai/deepseek-vl2-small")
+        model_path = "deepseek-ai/deepseek-vl2-small"
     elif vlm_name == 'deepseek-vl2':
-        model_path = os.path.join("deepseek-ai/deepseek-vl2")
+        model_path = "deepseek-ai/deepseek-vl2"
     else:
         raise ValueError(f"Model {vlm_name} not supported")
 
@@ -30,12 +30,12 @@ def load_deepseek_model(vlm_name='deepseek-vl2-small'):
     vl_gpt: DeepseekVLV2ForCausalLM = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True)
     vl_gpt = vl_gpt.to(torch.bfloat16).cuda().eval()
    
-    return vl_gpt, tokenizer
+    return vl_chat_processor, vl_gpt, tokenizer
 
 
 
 def deepseek_api_visual_inquiry(image_path, prompt_text, vlm_name='deepseek-vl2-small', **kwargs): #'gemini-1.5-pro'
-
+    vl_chat_processor = kwargs.get('vl_chat_processor')
     vl_gpt = kwargs.get('vl_gpt')
     tokenizer = kwargs.get('tokenizer')
     max_new_tokens = kwargs.get('max_new_tokens', 10000) # 512
@@ -85,6 +85,7 @@ def deepseek_api_visual_inquiry(image_path, prompt_text, vlm_name='deepseek-vl2-
 
 def deepseek_api_text_inquiry(prompt_text, vlm_name='deepseek-vl2-small', **kwargs):
 
+    vl_chat_processor = kwargs.get('vl_chat_processor')
     vl_gpt = kwargs.get('vl_gpt')
     tokenizer = kwargs.get('tokenizer')
     max_new_tokens = kwargs.get('max_new_tokens', 10000) # 512
@@ -159,6 +160,7 @@ def deepseek_multiimage_api_visual_inquiry(image_paths, prompt_texts, vlm_name='
         
         return conversation
 
+    vl_chat_processor = kwargs.get('vl_chat_processor')
     vl_gpt = kwargs.get('vl_gpt')
     tokenizer = kwargs.get('tokenizer')
     max_new_tokens = kwargs.get('max_new_tokens', 10000) # 512
