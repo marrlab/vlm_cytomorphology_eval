@@ -33,6 +33,10 @@ def get_global_info():
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-100:AwoQsgDv',
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-200:AxILVLLx',
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-50-auto:AwvXEh3K',
+                        'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-1-auto-cell:AzMWSEqg',
+                        'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-5-auto-cell:AzKy2WKx',
+                        'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-10-auto-cell:AzKvO1uD',
+                        'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-25-auto-cell:AzLJ9WtZ',
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-50-auto-cell:Axzl8t2D']
     recommended_models = {'gemini': 'gemini-2.0-flash-exp',
                           'gpt': 'gpt-4o',
@@ -79,10 +83,12 @@ def get_global_info():
 
 def get_review_model(vlm_name):
     if 'gemini' in vlm_name:
-        review_model = vlm_name
+        review_model = 'gpt-4o' #vlm_name
     elif 'gpt' in vlm_name:
-        review_model = vlm_name
+        review_model = 'gpt-4o' #vlm_name
     elif 'llama' in vlm_name:
+        review_model = 'gpt-4o'
+    elif 'deepseek' in vlm_name:
         review_model = 'gpt-4o'
     else:
         raise ValueError(f"{vlm_name} not found among the models. Add to get_review_model in dataset_info_and_paths.py")
@@ -331,7 +337,10 @@ def get_vlm_eval_subset_folder_path(dataset_name, dataset_type):
        vlm_eval_subsets_root_folder_path = global_info['vlm_eval_subsets_root_folder_path']
        vlm_eval_subset_folder_path = os.path.join(vlm_eval_subsets_root_folder_path, dataset_name, dataset_type)
        if not os.path.exists(vlm_eval_subset_folder_path):
+           print(f"Creating directory {vlm_eval_subset_folder_path}")
            os.makedirs(vlm_eval_subset_folder_path, exist_ok=True)
+       else:
+           print(f"Directory {vlm_eval_subset_folder_path} already exists")
        return vlm_eval_subset_folder_path
    except OSError as e:
        raise ValueError(f"Error creating directory structure: {e}")
