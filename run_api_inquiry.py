@@ -351,7 +351,11 @@ def run_api_review(vlm_name: str, dataset_name: str, task_type: str, **kwargs):
     sleep_time = model_importer.sleep_time
 
     # Get prompt dictionary for review
-    prompt = get_prompt(dataset_name, task_type, reviewed=True)
+
+    if task_type == '1shot_classification':
+        prompt = get_prompt(dataset_name, task_type = '0shot_classification', reviewed=True)
+    else:
+        prompt = get_prompt(dataset_name, task_type, reviewed=True)
     
     # Load original answers
     answers_path = get_result_path(vlm_name, dataset_name, task_type, reviewed=False, file_type_extension='csv')['answers_path']
