@@ -371,9 +371,12 @@ def get_results_folder_path(dataset_name):
     conf_mat_folder_path = os.path.join(results_folder_path, 'confusion_matrices')
 
     # Create output folder if it doesn't exist
-    os.makedirs(results_folder_path, exist_ok=True)
-    os.makedirs(answers_folder_path, exist_ok=True)
-    os.makedirs(conf_mat_folder_path, exist_ok=True)
+    if not os.path.exists(results_folder_path):
+        os.makedirs(results_folder_path, exist_ok=True)
+    if not os.path.exists(answers_folder_path):
+        os.makedirs(answers_folder_path, exist_ok=True)
+    if not os.path.exists(conf_mat_folder_path):
+        os.makedirs(conf_mat_folder_path, exist_ok=True)
 
     results_folders_paths = {'results_folder_path': results_folder_path,
                           'answers_folder_path': answers_folder_path,
@@ -391,7 +394,8 @@ def get_plots_folder_path(dataset_name):
 
     plots_folder_path = os.path.join(plots_root_folder_path, dataset_name)
    
-    os.makedirs(plots_folder_path, exist_ok=True)  
+    if not os.path.exists(plots_folder_path):
+        os.makedirs(plots_folder_path, exist_ok=True)  
 
     return plots_folder_path
 
