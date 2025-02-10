@@ -32,7 +32,8 @@ def get_global_info():
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-50:Awfmw6Cp',
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-100:AwoQsgDv',
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-200:AxILVLLx',
-                        'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-50-auto:AwvXEh3K']
+                        'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-50-auto:AwvXEh3K',
+                        'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-50-auto-cell:Axzl8t2D']
     recommended_models = {'gemini': 'gemini-2.0-flash-exp',
                           'gpt': 'gpt-4o',
                           'llama': 'llama-3.2-multimodal-11B',

@@ -397,7 +397,7 @@ def get_prompt(dataset_name: str, task_type: str, reviewed=False):
         elif task_type == 'nonstructured':
             return None
 
-  elif dataset_name == 'HiCervix':
+    elif dataset_name == 'HiCervix':
         if task_type == '0shot_classification':
             if reviewed==False:
                 return prompt_HiCervix_0shot_classification
