@@ -330,7 +330,8 @@ def get_vlm_eval_subset_folder_path(dataset_name, dataset_type):
        global_info = get_global_info()
        vlm_eval_subsets_root_folder_path = global_info['vlm_eval_subsets_root_folder_path']
        vlm_eval_subset_folder_path = os.path.join(vlm_eval_subsets_root_folder_path, dataset_name, dataset_type)
-       os.makedirs(vlm_eval_subset_folder_path, exist_ok=True)
+       if not os.path.exists(vlm_eval_subset_folder_path):
+           os.makedirs(vlm_eval_subset_folder_path, exist_ok=True)
        return vlm_eval_subset_folder_path
    except OSError as e:
        raise ValueError(f"Error creating directory structure: {e}")
