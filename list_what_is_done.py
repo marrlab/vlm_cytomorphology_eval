@@ -20,14 +20,27 @@ if __name__ == "__main__":
     # recommended_models = global_info['recommended_models']
     available_task_types.remove('nonstructured')
 
+    results_fully_computed = []
+    results_partially_computed = []
+    results_not_computed = []
+
     for reviewed in [False, True]:
         if reviewed == False:
-            print('*Results computed with VLM models:*')
+            #print('*Results computed with VLM models:*')
+            results_fully_computed.append('***Answers by VLM models:***')
+            results_partially_computed.append('***Answers by VLM models:***')
+            results_not_computed.append('***Answers by VLM models:***')
         else:
-            print('*Answers reviewed:*')
+            #print('*Answers reviewed:*')
+            results_fully_computed.append('***Answers reviewed:***')
+            results_partially_computed.append('***Answers reviewed:***')
+            results_not_computed.append('***Answers reviewed:***')
 
         for dataset_name in available_datasets:
-            print(f'*Results for dataset: {dataset_name}:*')
+            #print(f'*Results for dataset: {dataset_name}:*')
+            results_fully_computed.append(f'**Results for dataset: {dataset_name}:**')
+            results_partially_computed.append(f'**Results for dataset: {dataset_name}:**')
+            results_not_computed.append(f'**Results for dataset: {dataset_name}:**')
 
             if dataset_name == 'HiCervix':
                 continue
@@ -41,11 +54,12 @@ if __name__ == "__main__":
             len_dataset = len(subset_labels_df)
 
             for task_type in available_task_types:
-                print(f'*Results for task type: {task_type}:*')
+                #print(f'*Results for task type: {task_type}:*')
+                results_fully_computed.append(f'*Results for task type: {task_type}:*')
+                results_partially_computed.append(f'*Results for task type: {task_type}:*')
+                results_not_computed.append(f'*Results for task type: {task_type}:*')
 
-                results_fully_computed = []
-                results_partially_computed = []
-                results_not_computed = []
+                
 
                 for vlm_name in available_models:  
                     if ('acevedo' in vlm_name) and ('Acevedo' not in dataset_name):
@@ -68,19 +82,26 @@ if __name__ == "__main__":
                     else:
                         results_not_computed.append(vlm_name) # + f' {answers_path}')
 
-                print('*Fully computed:*')
-                for model in results_fully_computed:
-                    print(f'\t{model}')
-                
-                print('*Partially computed:*')
-                for model in results_partially_computed:
-                    print(f'\t{model}')
-                
-                print('*Not computed:*')
-                for model in results_not_computed:
-                    print(f'\t{model}')
+    
+    print('******************Begin report******************\n')
 
-            
+    print('-----Fully computed:-----')
+    for line in results_fully_computed:
+        print(f'\t{line}')
+
+    print('\n--------------------------------\n')
+    
+    print('-----Partially computed:-----')
+    for line in results_partially_computed:
+        print(f'\t{line}')
+
+    print('\n--------------------------------\n')
+
+    print('-----Not yet computed:-----')
+    for line in results_not_computed:
+        print(f'\t{line}')
+
+    print('\n###################End report###################\n')
 
 
 
