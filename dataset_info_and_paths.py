@@ -23,8 +23,8 @@ def get_global_info():
 
     available_datasets = ['AML_Matek', 'Bone_Marrow_Cyto', 'WBCAtt', 'Acevedo', 'HiCervix']
     available_task_types = ['0shot_classification','1shot_classification', 'nonstructured']
-    available_model_families = ['gemini', 'gpt', 'llama', 'deepseek']
-    available_models = ['gemini-2.0-flash-exp', 'gpt-4o', 'llama-3.2-multimodal-11B', 'deepseek-vl2-tiny', 'deepseek-vl2-small',
+    available_model_families = ['gemini', 'gpt', 'llama'] #, 'deepseek']
+    available_models = ['gemini-2.0-flash-exp', 'gpt-4o', 'llama-3.2-multimodal-11B', #'deepseek-vl2-tiny', 'deepseek-vl2-small',
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-1:AwdygYO3',
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-5:Awe2yBGI',
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-10:AweEXbUp',
@@ -337,8 +337,8 @@ def get_vlm_eval_subset_folder_path(dataset_name, dataset_type):
        if not os.path.exists(vlm_eval_subset_folder_path):
            print(f"Creating directory {vlm_eval_subset_folder_path}")
            os.makedirs(vlm_eval_subset_folder_path, exist_ok=True)
-       else:
-           print(f"Directory {vlm_eval_subset_folder_path} already exists")
+       # else:
+           # print(f"Directory {vlm_eval_subset_folder_path} already exists")
        return vlm_eval_subset_folder_path
    except OSError as e:
        raise ValueError(f"Error creating directory structure: {e}")
