@@ -32,9 +32,9 @@ if __name__ == "__main__":
             results_not_computed.append('***Answers by VLM models:***')
         else:
             #print('*Answers reviewed:*')
-            results_fully_computed.append('***Answers reviewed:***')
-            results_partially_computed.append('***Answers reviewed:***')
-            results_not_computed.append('***Answers reviewed:***')
+            results_fully_computed.append('\n***Answers reviewed:***')
+            results_partially_computed.append('\n***Answers reviewed:***')
+            results_not_computed.append('\n***Answers reviewed:***')
 
         for dataset_name in available_datasets:
             #print(f'*Results for dataset: {dataset_name}:*')
