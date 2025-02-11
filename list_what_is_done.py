@@ -27,9 +27,9 @@ if __name__ == "__main__":
     for reviewed in [False, True]:
         if reviewed == False:
             #print('*Results computed with VLM models:*')
-            results_fully_computed.append('***Answers by VLM models:***')
-            results_partially_computed.append('***Answers by VLM models:***')
-            results_not_computed.append('***Answers by VLM models:***')
+            results_fully_computed.append('\n***Answers by VLM models:***')
+            results_partially_computed.append('\n***Answers by VLM models:***')
+            results_not_computed.append('\n***Answers by VLM models:***')
         else:
             #print('*Answers reviewed:*')
             results_fully_computed.append('\n***Answers reviewed:***')
@@ -42,8 +42,8 @@ if __name__ == "__main__":
             results_partially_computed.append(f'**Results for dataset: {dataset_name}:**')
             results_not_computed.append(f'**Results for dataset: {dataset_name}:**')
 
-            if dataset_name == 'HiCervix':
-                continue
+            #if dataset_name == 'HiCervix':
+            #    continue
 
             dataset_info = get_dataset_info(dataset_name, dataset_type = 'test')
             vlm_eval_subset_labels_path = dataset_info['vlm_eval_subset_labels_path']

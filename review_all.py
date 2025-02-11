@@ -21,8 +21,9 @@ if __name__ == "__main__":
     available_task_types = [task_type for task_type in available_task_types if task_type != 'nonstructured']
 
     for task_type in available_task_types:
+        print(f'Reviewing {task_type} for {args.dataset_name}')
         for vlm_name in available_models:
-
+            print(f'Reviewing {vlm_name} for {args.dataset_name} for {task_type}')
             nonreviewed_results_path = get_result_path(vlm_name, args.dataset_name, task_type, reviewed = False, file_type_extension='csv')['answers_path']
             reviewed_results_path = get_result_path(vlm_name, args.dataset_name, task_type, reviewed = True, file_type_extension='csv')['answers_path']
 
@@ -36,6 +37,6 @@ if __name__ == "__main__":
 
             review_model = get_review_model(vlm_name)
 
-            print(f"Running review for {vlm_name} on {args.dataset_name} for {task_type}. Reviewing with {review_model}")
+            print(f"Loaded files and running review for {vlm_name} on {args.dataset_name} for {task_type}. Reviewing with {review_model}")
 
             run_api_review(vlm_name, args.dataset_name, task_type)
