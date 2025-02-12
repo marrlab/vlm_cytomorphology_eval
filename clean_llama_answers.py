@@ -26,11 +26,18 @@ def clean_llama_answers():
             # Check if file is xlsx or csv and contains required strings
             if ('llama-3' in filename and 'answers' in filename and 
                 (filename.endswith('.xlsx') or filename.endswith('.csv'))):
+
+                if '_reviewed_' in filename:
+                    print(f"Skipping reviewed file {filename}")
+                    continue
                 
                 filepath = os.path.join(root, filename)
                 
                 # Create backup copy with '_raw' suffix
                 backup_path = filepath.rsplit('.', 1)[0] + '_raw.' + filepath.rsplit('.', 1)[1]
+                if os.path.exists(backup_path):
+                    print(f"Backup file {backup_path} already exists, skipping")
+                    continue                
                 shutil.copy2(filepath, backup_path)
                 
                 # Read file based on extension
