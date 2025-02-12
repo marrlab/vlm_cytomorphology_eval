@@ -289,6 +289,7 @@ def get_dataset_info(dataset_name, dataset_type):
             original_full_dataset_path = None
             dataset_csv_path = '/Users/juliaschafer/Helmholtz/VLMevaluation/Datasets/papsmear_dataset_processed/HiCervix.csv'
 
+        n_samples_per_label = 50
         abbreviation_dict_path = None
 
         paths_column_in_csv = 'Path'

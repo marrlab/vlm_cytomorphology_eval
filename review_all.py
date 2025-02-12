@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
     for task_type in available_task_types:
         print(f'Reviewing {task_type} for {args.dataset_name}')
-        for vlm_name in available_models:
+        for vlm_name in  available_models: # ['llama-3.2-multimodal-11B']:
             print(f'Reviewing {vlm_name} for {args.dataset_name} for {task_type}')
             nonreviewed_results_path = get_result_path(vlm_name, args.dataset_name, task_type, reviewed = False, file_type_extension='csv')['answers_path']
             reviewed_results_path = get_result_path(vlm_name, args.dataset_name, task_type, reviewed = True, file_type_extension='csv')['answers_path']

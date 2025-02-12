@@ -42,8 +42,8 @@ if __name__ == "__main__":
             results_partially_computed.append(f'**Results for dataset: {dataset_name}:**')
             results_not_computed.append(f'**Results for dataset: {dataset_name}:**')
 
-            #if dataset_name == 'HiCervix':
-            #    continue
+            if dataset_name == 'HiCervix':
+                continue
 
             dataset_info = get_dataset_info(dataset_name, dataset_type = 'test')
             vlm_eval_subset_labels_path = dataset_info['vlm_eval_subset_labels_path']
@@ -80,7 +80,7 @@ if __name__ == "__main__":
                         else:
                             results_partially_computed.append(vlm_name+f' ({len_answers}/{len_dataset})')
                     else:
-                        results_not_computed.append(vlm_name) # + f' {answers_path}')
+                        results_not_computed.append(vlm_name + f' {answers_path}')
 
     
     print('******************Begin report******************\n')
