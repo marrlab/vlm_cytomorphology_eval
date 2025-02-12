@@ -5,7 +5,7 @@ import time
 
 class FeatureAnalyzer:
     def __init__(self):
-        self.base_path = Path("cluster path here: (/Users/juliaschafer/Downloads/Results/Acevedo/confusion_matrices)")
+        self.base_path = Path("cluster path here: (/Users/juliaschafer/Downloads/Results/)")
         self.client = OpenAI(api_key="add key here")
         
         self.categories = {
@@ -13,8 +13,16 @@ class FeatureAnalyzer:
             'context_dependent': ['location', 'arrangement', 'pattern', 'surrounding'],
             'quantitative': ['count', 'ratio', 'number', 'measurement']
         }
+        self.dataset_files {
+            'Acevedo': ['Acevedo_0shot_classification_gpt-4o_answers_conf_mat.csv'],
+            'Bone_Marrow_Cyto': ['Bone_Marrow_Cyto_0shot_classification_gpt-4o_answers_conf_mat.csv'],
+            'AML_Matek': ['AML_Matek_0shot_classification_gpt-4o_answers_conf_mat.csv',
+                         'AML_Matek_0shot_classification_gpt-4o_answers_reviewed_gpt-4o_conf_mat.csv']
+                         
+                        }
 
-    def get_features(self, true_label, predicted_label):
+
+    def get_features(self, true_label: str, predicted_label: str) -> Optional[List[Dict]]:
         prompt = f"""
         For this blood cell classification task where {true_label} was classified as {predicted_label}:
 
@@ -31,16 +39,11 @@ class FeatureAnalyzer:
         - Feature_name should be specific (e.g., 'nuclear_size' not just 'size')
         - Importance_score should reflect how crucial this feature is for distinguishing THESE SPECIFIC cell types
         - Explanation should detail why this feature helps distinguish between these specific cell types
-
-        Example format:
-        nuclear_chromatin_pattern,95,Dense chromatin pattern unique to this cell type vs the fine chromatin in the other
-        cytoplasmic_granularity,85,Presence of specific azurophilic granules distinguishes from agranular types
-        nuclear_segmentation,80,Multi-lobed nucleus characteristic of mature forms vs round nucleus
         """
 
         try:
             response = self.client.chat.completions.create(
-                model="gpt-4o, or other model",
+                model="gpt-4o",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.1
             )
@@ -48,7 +51,7 @@ class FeatureAnalyzer:
             features = []
             for line in response.choices[0].message.content.strip().split('\n'):
                 if line:
-                    name, score, explanation = line.split(',', 2)
+                    name, score, explanation = line.split(',',2)
                     feature_category = self.categorize_feature(name.strip().lower())
                     features.append({
                         'name': name.strip(),
@@ -62,19 +65,30 @@ class FeatureAnalyzer:
             print(f"Error getting features: {e}")
             return None
 
-    def categorize_feature(self, feature_name):
+    def categorize_feature(self, feature_name: str): -> str:
+        
         feature_name = feature_name.lower()
         for category, keywords in self.categories.items():
             if any(keyword in feature_name for keyword in keywords):
                 return category
         return 'other'
 
+     def get_confusion_matrix_path(self, dataset_name: str, filename: str) -> Path:
+        return self.base_path / dataset_name / "confusion_matrices" / filename
+         
     def analyze_and_save_results(self, conf_mat_file):
         print(f"Reading confusion matrix from: {conf_mat_file}")
+        conf_mat_file = self.get_confusion_matrix_path(dataset_name, filename)
+        
+        print(f"\nAnalyzing {dataset_name} - {filename}")
+        print(f"Reading confusion matrix from: {conf_mat_file}")
+        
+        if not conf_mat_file.exists():
+            print(f"File not found: {conf_mat_file}")
+            return None
+
         df = pd.read_csv(conf_mat_file, header=1)
-        
         csv_data = []
-        
         cell_types = [col for col in df.columns[2:-1]]
         processed_pairs = set()
         
@@ -106,36 +120,38 @@ class FeatureAnalyzer:
                             time.sleep(1)
         
         results_df = pd.DataFrame(csv_data)
-        
-        output_file = self.base_path.parent / 'feature_analysis_results.csv'
-        results_df.to_csv(output_file, index=False)
-        print(f"\nDetailed results saved to: {output_file}")
-        
-        summary_data = []
-        for category in self.categories.keys() | {'other'}:
-            category_scores = results_df[results_df['feature_category'] == category]['importance_score']
-            if len(category_scores) > 0:
-                summary_data.append({
-                    'category': category,
-                    'avg_importance': category_scores.mean(),
-                    'count': len(category_scores),
-                    'std_dev': category_scores.std()
-                })
-        
-        summary_df = pd.DataFrame(summary_data)
-        summary_file = self.base_path.parent / 'feature_category_summary.csv'
-        summary_df.to_csv(summary_file, index=False)
-        print(f"Category summary saved to: {summary_file}")
 
+    def run_analysis(self):
+        all_results = []
+       
+        for dataset, files in self.dataset_files.items():
+            for filename in files:
+                results = self.analyze_confusion_matrix(dataset, filename)
+                if results is not None:
+                    all_results.append(results)
+        
+        if all_results:
+            final_df = pd.concat(all_results, ignore_index=True)
+            
+            output_file = self.base_path / 'feature_analysis_results.csv'
+            final_df.to_csv(output_file, index=False)
+            print(f"\nDetailed results saved to: {output_file}")
+            
+            summary = final_df.groupby(['dataset', 'feature_category']).agg({
+                'importance_score': ['mean', 'std', 'count']
+            }).reset_index()
+            
+            summary_file = self.base_path / 'feature_category_summary.csv'
+            summary.to_csv(summary_file, index=False)
+            print(f"Category summary saved to: {summary_file}")
+            
+            return final_df
+        
+        return None
+        
 def main():
     analyzer = FeatureAnalyzer()
-    base_file = analyzer.base_path / "add confusion matrix here: f.e.: Acevedo_0shot_classification_gpt-4o_answers_conf_mat.csv"
-    
-    if not base_file.exists():
-        print(f"File not found: {base_file}")
-        return
-    
-    analyzer.analyze_and_save_results(base_file)
+    analyzer.run_analysis()
 
 if __name__ == "__main__":
     main()
