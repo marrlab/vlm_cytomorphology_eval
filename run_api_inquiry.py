@@ -368,8 +368,8 @@ def run_api_review(vlm_name: str, dataset_name: str, task_type: str, **kwargs):
     # Get categories from prompt dictionary
     categories = [col for col in list(prompt.keys()) if col != 'image_name']
     
-    answers_path_base = get_result_path(vlm_name, dataset_name, task_type, reviewed=True, file_type_extension='csv')['answers_path']
-    usage_path_base = get_result_path(vlm_name, dataset_name, task_type, reviewed=True, file_type_extension='csv')['tokens_path']
+    answers_path_base = get_result_path(vlm_name, dataset_name, task_type, reviewed=True, file_type_extension=None)['answers_path']
+    usage_path_base = get_result_path(vlm_name, dataset_name, task_type, reviewed=True, file_type_extension=None)['tokens_path']
 
     # Process each image
     for j, category in enumerate(categories):
