@@ -17,7 +17,7 @@ class FeatureAnalyzer:
             'Acevedo': ['Acevedo_0shot_classification_gpt-4o_answers_conf_mat.csv'],
             'Bone_Marrow_Cyto': ['Bone_Marrow_Cyto_0shot_classification_gpt-4o_answers_conf_mat.csv'],
             'AML_Matek': ['AML_Matek_0shot_classification_gpt-4o_answers_conf_mat.csv',
-                         'AML_Matek_0shot_classification_gpt-4o_answers_reviewed_gpt-4o_conf_mat.csv]
+                         'AML_Matek_0shot_classification_gpt-4o_answers_reviewed_gpt-4o_conf_mat.csv']
                          
                         }
 
