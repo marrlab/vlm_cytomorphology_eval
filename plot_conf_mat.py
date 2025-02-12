@@ -508,10 +508,16 @@ if __name__ == '__main__':
         for vlm_name in global_info['available_models']:
             for task_type in [t for t in global_info['available_task_types'] if t != 'nonstructured']:
                 for reviewed in [True, False]:
-                    plot_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, compute_confmat_from_scratch=compute_confmat_from_scratch)
+                    try:
+                        plot_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, compute_confmat_from_scratch=compute_confmat_from_scratch)
+                    except Exception as e:
+                        print(f"Error plotting confusion matrix for {vlm_name} on {dataset_name} for {task_type} with {reviewed} reviews: {e}")
 
     for task_type in [t for t in global_info['available_task_types'] if t != 'nonstructured']:
         for reviewed in [True, False]:
-            report_score_metrics(task_type, reviewed, file_type_extension='png')
+            try:
+                report_score_metrics(task_type, reviewed, file_type_extension='png')
+            except Exception as e:
+                print(f"Error reporting score metrics for {task_type} with {reviewed} reviews: {e}")
 
 
