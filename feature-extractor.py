@@ -2,9 +2,6 @@ import pandas as pd
 from pathlib import Path
 from openai import OpenAI
 import time
-import matplotlib.pyplot as plt
-import seaborn as sns
-from typing import Dict, List, Optional, Tuple
 
 class FeatureAnalyzer:
     def __init__(self):
@@ -18,23 +15,12 @@ class FeatureAnalyzer:
         }
         self.dataset_files {
             'Acevedo': ['Acevedo_0shot_classification_gpt-4o_answers_conf_mat.csv'],
-            'WCBAtt': ['WBCAtt_0shot_classification_gpt-4o_answers_conf_mat.csv',
-                      'WBCAtt_0shot_classification_gpt-4o_answers_reviewed_gpt-4o_conf_mat.csv'],
             'Bone_Marrow_Cyto': ['Bone_Marrow_Cyto_0shot_classification_gpt-4o_answers_conf_mat.csv'],
             'AML_Matek': ['AML_Matek_0shot_classification_gpt-4o_answers_conf_mat.csv',
-                         'AML_Matek_0shot_classification_gpt-4o_answers_reviewed_gpt-4o_conf_mat.csv'
+                         'AML_Matek_0shot_classification_gpt-4o_answers_reviewed_gpt-4o_conf_mat.csv]
+                         
+                        }
 
-        sns.set_style("whitegrid")
-        plt.rcParams['figure.figsize'] = (15, 10)
-        plt.rcParams['axes.grid'] = True
-        plt.rcParams['grid.linestyle'] = ':'
-        plt.rcParams['grid.color'] = '#CCCCCC'
-        plt.rcParams['font.family'] = 'sans-serif'
-        plt.rcParams['font.sans-serif'] = ['Arial']
-        plt.rcParams['axes.labelsize'] = 12
-        plt.rcParams['xtick.labelsize'] = 10
-        plt.rcParams['ytick.labelsize'] = 10
-        plt.rcParams['legend.fontsize'] = 10
 
     def get_features(self, true_label: str, predicted_label: str) -> Optional[List[Dict]]:
         prompt = f"""
@@ -65,10 +51,8 @@ class FeatureAnalyzer:
             features = []
             for line in response.choices[0].message.content.strip().split('\n'):
                 if line:
-                    parts = line.split(',',2)
-                    if len(parts) ==3:
-                        name, score, explanation = parts
-                        feature_category = self.categorize_feature(name.strip().lower())
+                    name, score, explanation = line.split(',',2)
+                    feature_category = self.categorize_feature(name.strip().lower())
                     features.append({
                         'name': name.strip(),
                         'category': feature_category,
@@ -81,7 +65,8 @@ class FeatureAnalyzer:
             print(f"Error getting features: {e}")
             return None
 
-    def categorize_feature(self, feature_name):
+    def categorize_feature(self, feature_name: str): -> str:
+        
         feature_name = feature_name.lower()
         for category, keywords in self.categories.items():
             if any(keyword in feature_name for keyword in keywords):
@@ -136,46 +121,6 @@ class FeatureAnalyzer:
         
         results_df = pd.DataFrame(csv_data)
 
-    def plot_consolidated_results(self, all_results: pd.DataFrame):
-        plt.figure(figsize=(15, 10))
-        summary = all_results.groupby(['dataset', 'feature_category'])['importance_score'].agg(['mean', 'std']).reset_index()
-        num_datasets = len(summary['dataset'].unique())
-        num_categories = len(summary['feature_category'].unique())
-        colors = sns.color_palette('husl', n_colors=num_categories)
-        
-
-        for i, category in enumerate(summary['feature_category'].unique()):
-            category_data = summary[summary['feature_category'] == category]
-            plt.plot(category_data['dataset'], category_data['mean'], 
-                    label=category.capitalize(),
-                    color=colors[i], 
-                    marker='o',
-                    linewidth=2,
-                    markersize=8)
-            
-            plt.fill_between(category_data['dataset'],
-                           category_data['mean'] - category_data['std'],
-                           category_data['mean'] + category_data['std'],
-                           color=colors[i],
-                           alpha=0.2)
-
-        plt.title('Feature Importance Analysis Across Datasets', fontsize=14, pad=20)
-        plt.xlabel('Dataset', fontsize=12)
-        plt.ylabel('Average Importance Score', fontsize=12)
-        plt.xticks(rotation=45)
-        plt.grid(True, linestyle=':', alpha=0.7)
-        plt.legend(title='Feature Categories', bbox_to_anchor=(1.05, 1), loc='upper left')
-        
-        plt.ylim(0, 100)
-        
-        plt.tight_layout()
-        
-        plot_path = self.base_path / 'consolidated_feature_analysis.png'
-        plt.savefig(plot_path, dpi=300, bbox_inches='tight')
-        plt.close()
-        
-        print(f"\nConsolidated plot saved to: {plot_path}")
-
     def run_analysis(self):
         all_results = []
        
@@ -191,8 +136,6 @@ class FeatureAnalyzer:
             output_file = self.base_path / 'feature_analysis_results.csv'
             final_df.to_csv(output_file, index=False)
             print(f"\nDetailed results saved to: {output_file}")
-            
-            self.plot_consolidated_results(final_df)
             
             summary = final_df.groupby(['dataset', 'feature_category']).agg({
                 'importance_score': ['mean', 'std', 'count']
