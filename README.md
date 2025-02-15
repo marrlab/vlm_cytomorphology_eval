@@ -138,9 +138,36 @@ See gpt_api.py for an example.
 
 5. Add potential new task-specific functions to the import_model function in the run_api_inquiry.py file.
 
-
-
-
-
-
+### Setting up DeepSeek VL2
+Check Cuda versions available on the cluster
+```
+ls /usr/local/ | grep cuda
+```
+The recommended version of Cuda for PyTorch 2.0.1, which is used by DeepSeek VL2 is Cuda 11.8. Activate Cuda 11.8:
+```
+export CUDA_HOME=/usr/local/cuda-11.8
+export PATH=/usr/local/cuda-11.8/bin:$PATH
+export LD_LIBRARY_PATH=/usr/local/cuda-11.8/lib64:$LD_LIBRARY_PATH
+```
+Verify that it's active:
+```
+nvcc --version
+```
+Create a conda environment:
+```
+conda create -n deepseek python=3.9 -y
+```
+Activate it:
+```
+conda activate deepseek
+```
+Navigate to the directory:
+```
+cd /lustre/groups/labs/marr/qscd01/projects/cytology_vlm_eval/DeepSeek-VL2
+```
+DeepSeek-VL2 is already cloned there. If it wasn't, you would have to run ```git clone https://github.com/deepseek-ai/DeepSeek-VL2.git```
+Install DeepSeek-VL2:
+```
+pip install -e .
+```
 

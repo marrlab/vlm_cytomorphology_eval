@@ -430,6 +430,10 @@ def run_api_review(vlm_name: str, dataset_name: str, task_type: str, **kwargs):
 
 # run_api_0shot_classification(vlm_name, dataset_name)
 
+# vlm_name = 'gpt-4o'
+# dataset_name = 'Acevedo'
+
+# run_api_1shot_prompt_classification(vlm_name, dataset_name)
 
 if __name__ == "__main__":
     import argparse
