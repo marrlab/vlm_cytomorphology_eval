@@ -167,12 +167,18 @@ def compute_score_metrics(vlm_name, dataset_name, task_type, reviewed, compute_c
     per_class_metrics = {}
     classes = conf_matrix.index
     
+    total_samples = conf_matrix.values.sum()
+    class_weights = {}
+    
     for cls in classes:
         # Get true positives, false positives, true negatives, false negatives
         tp = conf_matrix.loc[cls, cls]
         fp = conf_matrix[cls].sum() - tp
         fn = conf_matrix.loc[cls].sum() - tp
         # tn = conf_matrix.values.sum() - tp - fp - fn
+        
+        # Calculate class weight
+        class_weights[cls] = conf_matrix.loc[cls].sum() / total_samples
         
         # Calculate metrics
         precision = tp / (tp + fp) if (tp + fp) > 0 else 0
@@ -196,10 +202,14 @@ def compute_score_metrics(vlm_name, dataset_name, task_type, reviewed, compute_c
     total_fp = sum(conf_matrix[cls].sum() - conf_matrix.loc[cls, cls] for cls in classes)
     total_fn = sum(conf_matrix.loc[cls].sum() - conf_matrix.loc[cls, cls] for cls in classes)
 
+    # Calculate weighted F1 score
+    weighted_f1 = sum(per_class_metrics[cls]['F1 Score'] * class_weights[cls] for cls in classes)
+
     overall_metrics = pd.DataFrame({
         'Precision (PPV)': [total_tp / (total_tp + total_fp)  if (total_tp + total_fp) > 0 else 0],
         'Sensitivity (Recall)': [total_tp / (total_tp + total_fn)  if (total_tp + total_fn) > 0 else 0],
-        'F1 Score': [2 * total_tp / (2 * total_tp + total_fp + total_fn)  if (2 * total_tp + total_fp + total_fn) > 0 else 0]
+        'F1 Score': [2 * total_tp / (2 * total_tp + total_fp + total_fn)  if (2 * total_tp + total_fp + total_fn) > 0 else 0],
+        'Weighted F1 Score': [weighted_f1]
     }, index=['Overall'])
     
     metrics = {
@@ -258,6 +268,21 @@ def compute_score_metrics(vlm_name, dataset_name, task_type, reviewed, compute_c
         f1_scores_df.to_csv(f1_score_path + '.csv')
         f1_scores_df.to_excel(f1_score_path + '.xlsx')
 
+        # Save weighted F1 scores
+        weighted_f1_score_path = score_metrics_paths['weighted_f1_score_path']
+        if os.path.exists(weighted_f1_score_path + '.csv'):
+            weighted_f1_scores_df = pd.read_csv(weighted_f1_score_path + '.csv', index_col=0)
+        elif os.path.exists(weighted_f1_score_path + '.xlsx'):
+            weighted_f1_scores_df = pd.read_excel(weighted_f1_score_path + '.xlsx', index_col=0)
+        else:   
+            weighted_f1_scores_df = pd.DataFrame(columns=[vlm_name], index=[dataset_name])
+        weighted_f1_scores_df.loc[dataset_name, vlm_name] = overall_metrics['Weighted F1 Score'].values[0]
+        # Sort index and columns alphabetically
+        weighted_f1_scores_df = weighted_f1_scores_df.sort_index()
+        weighted_f1_scores_df = weighted_f1_scores_df.reindex(sorted(weighted_f1_scores_df.columns), axis=1)
+        weighted_f1_scores_df.to_csv(weighted_f1_score_path + '.csv')
+        weighted_f1_scores_df.to_excel(weighted_f1_score_path + '.xlsx')
+
     return metrics
 
 
@@ -288,7 +313,8 @@ def report_score_metrics(task_type, reviewed, file_type_extension='png'):
         # 'npv_score_path': 'Negative Predictive Value Scores',
         'sensitivity_score_path': 'Sensitivity Scores',
         # 'specificity_score_path': 'Specificity Scores',
-        'f1_score_path': 'F1 Scores'
+        'f1_score_path': 'F1 Scores',
+        'weighted_f1_score_path': 'Weighted F1 Scores'
     }
     
     for metric_path_key, metric_name in metrics.items():

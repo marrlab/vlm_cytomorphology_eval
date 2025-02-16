@@ -508,22 +508,23 @@ def get_score_metrics_paths(task_type, reviewed, file_type_extension=None):
     precision_score_path = os.path.join(results_root_folder_path, f'{task_type}_precision_scores')
     sensitivity_score_path = os.path.join(results_root_folder_path, f'{task_type}_sensitivity_scores')
     f1_score_path = os.path.join(results_root_folder_path, f'{task_type}_f1_scores')
+    weighted_f1_score_path = os.path.join(results_root_folder_path, f'{task_type}_weighted_f1_scores')
 
     if reviewed:
         precision_score_path = precision_score_path + '_reviewed'
         sensitivity_score_path = sensitivity_score_path + '_reviewed'
         f1_score_path = f1_score_path + '_reviewed'
-
+        weighted_f1_score_path = weighted_f1_score_path + '_reviewed'
     if file_type_extension != None:
         precision_score_path = precision_score_path + '.' + file_type_extension
         sensitivity_score_path = sensitivity_score_path + '.' + file_type_extension
         f1_score_path = f1_score_path + '.' + file_type_extension
-
+        weighted_f1_score_path = weighted_f1_score_path + '.' + file_type_extension
 
     score_metrics_paths = {'precision_score_path': precision_score_path,
                           'sensitivity_score_path': sensitivity_score_path,
-                          'f1_score_path': f1_score_path
-                          }
+                          'f1_score_path': f1_score_path,
+                          'weighted_f1_score_path': weighted_f1_score_path}
 
     return score_metrics_paths
 
