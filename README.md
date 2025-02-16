@@ -170,4 +170,32 @@ Install DeepSeek-VL2:
 ```
 pip install -e .
 ```
+In the DeepSeek requirements there are some packages missing to run in the vlm_eval package: numpy==1.26.4, pandas==1.5.3, openpyxl==3.1.2
+Alternatively you could install one of the environments (on top of python=3.9):
+```
+/lustre/groups/labs/marr/qscd01/projects/cytology_vlm_eval/deepseek_env.yaml
+/lustre/groups/labs/marr/qscd01/projects/cytology_vlm_eval/deepseek_env.txt 
+```
+and then run
+```
+pip install -e .
+```
+in the folder
+```
+/lustre/groups/labs/marr/qscd01/projects/cytology_vlm_eval/DeepSeek-VL2 
+```
 
+### Using DeepSeek
+Only works after you have installed it properly. Only works on A100 GPU with 80GB memory. 
+
+First run:
+```
+export CUDA_HOME=/usr/local/cuda-11.8
+export PATH=/usr/local/cuda-11.8/bin:$PATH
+export LD_LIBRARY_PATH=/usr/local/cuda-11.8/lib64:$LD_LIBRARY_PATH
+```
+Then:
+```
+conda activate deepseek
+```
+Then keep your fingers crossed.
