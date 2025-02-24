@@ -1,0 +1,108 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+
+plt.style.use('grayscale')
+plt.rcParams.update({
+    'font.family': 'Arial',
+    'axes.linewidth': 0.8,
+    'xtick.major.width': 0.8,
+    'ytick.major.width': 0.8,
+    'xtick.minor.width': 0.6,
+    'ytick.minor.width': 0.6,
+    'font.size': 0.4  # Base font size increased
+})
+
+
+df = pd.read_csv('feature_analysis_results5.csv', sep=',')
+df['importance_score'] = pd.to_numeric(df['importance_score'], errors='coerce')
+
+
+summary_df = pd.read_csv('feature_analysis_summary5.csv')
+
+summary_df['importance_score.1'] = pd.to_numeric(summary_df['importance_score.1'], errors='coerce')
+
+std_pivot = summary_df.pivot(
+    index='dataset',
+    columns='feature_name',
+    values='importance_score.1'
+)
+
+pivot_df = df.pivot_table(
+    index='dataset',
+    columns='feature_name',
+    values='importance_score',
+    aggfunc='mean'
+)
+
+pivot_df = pivot_df.fillna(pivot_df.mean())
+std_pivot = std_pivot.fillna(0).astype(float)  # Explicitly convert to float
+
+feature_means = pivot_df.mean()
+sorted_features = feature_means.sort_values(ascending=False).index
+
+
+pivot_df = pivot_df[sorted_features]
+std_pivot = std_pivot[sorted_features]
+
+fig, ax = plt.subplots(figsize=(15, 8), dpi=300)
+
+styles = [
+    {'color': 'black', 'marker': 'o', 'linestyle': '-'},
+    {'color': 'gray', 'marker': 's', 'linestyle': '--'}
+]
+
+for idx, (dataset, style) in enumerate(zip(pivot_df.index, styles)):
+    values = pivot_df.loc[dataset].astype(float)  # Ensure values are float
+    errors = std_pivot.loc[dataset].astype(float)  # Ensure errors are float
+    x = range(len(pivot_df.columns))
+    
+    ax.errorbar(x, values, yerr=errors, 
+                label=dataset,
+                color=style['color'],
+                marker=style['marker'],
+                linestyle=style['linestyle'],
+                linewidth=2,
+                markersize=8,
+                capsize=3,
+                capthick=1,
+                elinewidth=1,
+                markeredgewidth=1,
+                markeredgecolor='white',
+                zorder=3)
+
+ax.grid(True, linestyle='-', alpha=0.2, zorder=1, color='gray')
+ax.set_xlabel('Features', fontsize=14, labelpad=24)
+ax.set_ylabel('Importance Score', fontsize=14, labelpad=24)
+ax.tick_params(axis='both', which='major', labelsize=10)
+
+ax.set_facecolor('white')
+fig.patch.set_facecolor('white')
+
+plt.xticks(range(len(pivot_df.columns)), pivot_df.columns,
+           rotation=45, ha='right', fontsize=14)
+
+legend = ax.legend(title='Datasets', bbox_to_anchor=(1.02, 1),
+                  loc='upper left', fontsize=14,
+                  frameon=True,
+                  edgecolor='black', fancybox=False)
+legend.get_title().set_fontsize(14)
+
+y_values = pivot_df.values.flatten()
+ymin = max(np.floor(y_values.min()) - 1, 0)
+ymax = 52
+ax.set_ylim(ymin, ymax)
+
+yticks = np.arange(ymin, ymax + 1, 1)
+ax.set_yticks(yticks)
+ax.set_yticklabels([f'{x:.0f}' for x in yticks])
+
+ax.grid(True, which='major', linestyle='-', alpha=0.2, color='gray')
+
+plt.tight_layout()
+
+plt.savefig('feature_importance_analysis5.pdf', format='pdf',
+            bbox_inches='tight', dpi=300)
+plt.savefig('feature_importance_analysis5.png', format='png',
+            bbox_inches='tight', dpi=300)
+plt.close()
