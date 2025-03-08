@@ -79,6 +79,22 @@ class ModelImporter:
             self.api_text_inquiry = deepseek_api_text_inquiry
             self.api_multiimage_inquiry = deepseek_multiimage_api_visual_inquiry
             self.sleep_time = 0.2
+        elif 'medflamingo' in self.vlm_name:
+            from vlm_models.medflamingo_api import load_medflamingo_model,medflamingo_api_visual_inquiry, medflamingo_api_text_inquiry, medflamingo_multiimage_api_visual_inquiry
+            model, processor = load_medflamingo_model(vlm_name=self.vlm_name)
+            self.kwargs = {'model': model, 'processor': processor, 'max_new_tokens': 1024}
+            self.api_visual_inquiry = medflamingo_api_visual_inquiry
+            self.api_text_inquiry = medflamingo_api_text_inquiry
+            self.api_multiimage_inquiry = medflamingo_multiimage_api_visual_inquiry
+            self.sleep_time = 0.2
+        elif 'llavamed' in self.vlm_name:
+            from vlm_models.llavamed_api import load_llavamed_model,llavamed_api_visual_inquiry, llavamed_api_text_inquiry, llavamed_multiimage_api_visual_inquiry
+            model, tokenizer, image_processor = load_llavamed_model(vlm_name=self.vlm_name)
+            self.kwargs = {'model': model, 'processor': image_processor, 'tokenizer': tokenizer, 'max_new_tokens': 1024}
+            self.api_visual_inquiry = llavamed_api_visual_inquiry
+            self.api_text_inquiry = llavamed_api_text_inquiry
+            self.api_multiimage_inquiry = llavamed_multiimage_api_visual_inquiry
+            self.sleep_time = 0.2
         else:
             raise ValueError(f"Model {self.vlm_name} not found")
             self.api_visual_inquiry = None

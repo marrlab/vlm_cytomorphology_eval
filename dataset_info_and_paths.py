@@ -299,6 +299,26 @@ def get_dataset_info(dataset_name, dataset_type):
         ground_truth_columns_conf_mat = ['label']
         predicted_columns_conf_mat = ['cell_type']
 
+    elif dataset_name == 'MLL23':
+        published_dataset_location = ''
+        published_annotations_location = ''
+        if cluster_local == 'cluster':
+            original_full_dataset_path = '/lustre/groups/labs/marr/qscd01/datasets/240416_MLL23'
+            dataset_csv_path = '/lustre/groups/labs/marr/qscd01/projects/cytology_vlm_eval/Datasets/MLL23_path_labels.csv'
+        elif cluster_local == 'local':
+            original_full_dataset_path = None
+            dataset_csv_path = ''
+
+        n_samples_per_label = 50
+        abbreviation_dict_path = None
+
+        paths_column_in_csv = 'Path'
+        sampling_label_column_in_csv = 'Label'
+        which_classes = 'all' 
+        column_labels_to_keep=[sampling_label_column_in_csv]
+        ground_truth_columns_conf_mat = ['label']
+        predicted_columns_conf_mat = ['cell_type']
+
         
     dataset_info = {'dataset_name': dataset_name,
                     'published_dataset_location': published_dataset_location,
