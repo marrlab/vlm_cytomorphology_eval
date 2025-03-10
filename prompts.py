@@ -363,47 +363,33 @@ def get_prompt(dataset_name: str, task_type: str, reviewed=False):
     prompt_MLL23_0shot_classification = {
         "cell_type": """Consider the input image. Take a moment to think. Consider what features do the cells in the image have. Which of the white blood cell types listed below is shown? 
     Write just the cell type and nothing else. Choose one of the possible labels provided below (exactly as written here):
-    basophil    
-    large_granular lymphocyte   
-    monocyte         
-    segmented neutrophil   
-    atypical promyelocyte 
-    eosinophil  
-    neoplastic lymphocyte       
-    myeloblast       
-    normoblast            
-    smudge cell
-    hairy cell  
-    reactive lymphocyte         
-    myelocyte        
-    plasma cell
-    lymphocyte  
-    metamyelocyte              
-    band neutrophil   
-    promyelocyte"""
+    band neutrophil
+    basophil
+    eosinophil
+    erythroblast
+    lymphocyte
+    metamyelocyte
+    monocyte
+    myelocyte
+    platelet
+    promyelocyte
+    segmented neutrophil"""
     }
 
     prompt_MLL23_0shot_classification_review = {
         "cell_type": """Which of the classes listed below does the chatbot's answer regarding the cell type belong to? Write just the label (exacly as written below) and nothing else:
     NA (Chatbot is unsure/ambiguious/doesn't know/no answer provided/class cannot be determined)
-    basophil    
-    large_granular lymphocyte   
-    monocyte         
-    segmented neutrophil   
-    atypical promyelocyte 
-    eosinophil  
-    neoplastic lymphocyte       
-    myeloblast       
-    normoblast            
-    smudge cell
-    hairy cell  
-    reactive lymphocyte         
-    myelocyte        
-    plasma cell
-    lymphocyte  
-    metamyelocyte              
-    band neutrophil   
-    promyelocyte"""
+    band neutrophil
+    basophil
+    eosinophil
+    erythroblast
+    lymphocyte
+    metamyelocyte
+    monocyte
+    myelocyte
+    platelet
+    promyelocyte
+    segmented neutrophil"""
     }
         
     prompt_MLL23_nonstructured = {'cell_type': 'Consider the input image. Take a moment to think. Consider what features do the cells in the image have. Which type of white blood cell is shown? Write just the cell type and nothing else.'}

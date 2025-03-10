@@ -109,7 +109,6 @@ def medflamingo_multiimage_api_visual_inquiry(image_paths, prompt_texts, vlm_nam
         for prompt_text, image in zip(prompt_texts, images):
             messages = messages + '<image>' + prompt_text + '\n'        
         return messages, images
-    messages = messages + '\nAnswer:'
     model = kwargs.get('model')
     processor = kwargs.get('processor')
     max_new_tokens = kwargs.get('max_new_tokens', 10000)  # Default to 10000 if not provided
