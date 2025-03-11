@@ -90,11 +90,11 @@ class ModelImporter:
         elif 'llavamed' in self.vlm_name:
             from vlm_models.llavamed_api import load_llavamed_model,llavamed_api_visual_inquiry, llavamed_api_text_inquiry, llavamed_multiimage_api_visual_inquiry
             model, tokenizer, image_processor = load_llavamed_model(vlm_name=self.vlm_name)
-            self.kwargs = {'model': model, 'processor': image_processor, 'tokenizer': tokenizer, 'max_new_tokens': 1024}
+            self.kwargs = {'model': model, 'image_processor': image_processor, 'tokenizer':tokenizer, 'max_new_tokens': 1024}
             self.api_visual_inquiry = llavamed_api_visual_inquiry
             self.api_text_inquiry = llavamed_api_text_inquiry
             self.api_multiimage_inquiry = llavamed_multiimage_api_visual_inquiry
-            self.sleep_time = 0.2
+            self.sleep_time = 0.1
         else:
             raise ValueError(f"Model {self.vlm_name} not found")
             self.api_visual_inquiry = None

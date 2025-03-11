@@ -116,32 +116,58 @@ def llavamed_api_text_inquiry(prompt_text, vlm_name='llavamed', **kwargs):
     return answer, usage
 
 
-def llavamed_multiimage_api_visual_inquiry(image_paths, prompt_texts, vlm_name='llavamed', **kwargs):
-    #TODO
-    answer = None
-    usage = 0
-    return answer, usage
+def llavamed_multiimage_api_visual_inquiry(image_paths, prompt_texts, vlm_name='llavamed', **kwargs): #'gemini-1.5-pro'
+    if len(image_paths) != len(prompt_texts):
+        raise ValueError("The number of image paths and prompt texts must be the same.")
 
+    def prepare_messages(prompt_texts, image_paths):
 
+        images = [Image.open(image_path) for image_path in image_paths]
+        messages = ''    
+        for prompt_text, image in zip(prompt_texts, images):
+            if model.config.mm_use_im_start_end:
+                tmp = DEFAULT_IM_START_TOKEN + DEFAULT_IMAGE_TOKEN + DEFAULT_IM_END_TOKEN + '\n' + prompt_text
+            else:
+                tmp = DEFAULT_IMAGE_TOKEN + '\n' + prompt_text
+            messages = messages + tmp + '\n'      
+        return messages, images
 
+    model = kwargs.get('model')
+    image_processor = kwargs.get('image_processor')
+    tokenizer = kwargs.get('tokenizer')
+    max_new_tokens = kwargs.get('max_new_tokens', 10000) 
 
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    messages, images = prepare_messages(prompt_texts, image_paths)
 
+    conv = conv_templates['vicuna_v1'].copy()
+    conv.append_message(conv.roles[0], messages)
+    conv.append_message(conv.roles[1], None)
+    prompt = conv.get_prompt()
+    input_ids = tokenizer_image_token(prompt, tokenizer, IMAGE_TOKEN_INDEX, return_tensors='pt').unsqueeze(0).cuda()
+    stop_str = conv.sep if conv.sep_style != SeparatorStyle.TWO else conv.sep2
+    keywords = [stop_str]
+    stopping_criteria = KeywordsStoppingCriteria(keywords, tokenizer, input_ids)
 
+    image_tensors = process_images(images, image_processor, model.config)
 
-
-# image_paths = ['/home/ivan/Downloads/image1.jpeg','/home/ivan/Downloads/image2.jpeg']
-# prompt_texts = ["What is shown on the first image? What is the name of the file of the first image? What is the size of the image in pixels?","What is shown on the second image? What is the name of the file of the second image? What is the size of the image in pixels?"]
+    temperature = 0.2
+    top_p = None
+    num_beams = 1
+    with torch.inference_mode():
+        output_ids = model.generate(
+            input_ids,
+            images=image_tensors.half().cuda(),
+            do_sample=True if temperature > 0 else False,
+            temperature=temperature,
+            top_p=top_p,
+            num_beams=num_beams,
+            # no_repeat_ngram_size=3,
+            max_new_tokens=max_new_tokens,
+            use_cache=True)
     
-# answer, usage = gemini_multiimage_api_visual_inquiry(image_paths, prompt_texts)
+    answer = tokenizer.batch_decode(output_ids, skip_special_tokens=True)[0].strip()
+    usage = 0 
 
-
-# image_path = '/home/ivan/Helmholtz/VLMevaluation/Datasets/AML_Matek_structured/image_1.png'
-# prompt_text = "What's in the image?"
-#  answer, usage = gemini_api_visual_inquiry(image_path, prompt_text)
-
-
-# prompt_text = "What day is today?"
-# answer, usage = gemini_api_text_inquiry(prompt_text)
-# print(answer)
-# print(usage.total_token_count)
+    return answer, usage
