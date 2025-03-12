@@ -91,6 +91,10 @@ def get_review_model(vlm_name):
         review_model = 'gpt-4o'
     elif 'deepseek' in vlm_name:
         review_model = 'gpt-4o'
+    elif 'medflamingo' in vlm_name:
+        review_model = 'gpt-4o'
+    elif 'llavamed' in vlm_name:
+        review_model = 'gpt-4o'
     else:
         raise ValueError(f"{vlm_name} not found among the models. Add to get_review_model in dataset_info_and_paths.py")
     return review_model
