@@ -8,6 +8,7 @@ Created on Fri Dec 13 17:32:00 2024
 
 import pandas as pd
 import os
+import time
 
 def get_global_info():
     """
@@ -25,6 +26,7 @@ def get_global_info():
     available_task_types = ['0shot_classification','1shot_classification', 'nonstructured']
     available_model_families = ['gemini', 'gpt', 'llama', 'deepseek']
     available_models = ['gemini-2.0-flash-exp', 'gpt-4o', 'llama-3.2-multimodal-11B', 'deepseek-vl2-tiny', 'deepseek-vl2-small',
+                        'medflamingo',  'llavamed', 'conch',
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-1:AwdygYO3',
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-5:Awe2yBGI',
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-10:AweEXbUp',
@@ -89,6 +91,12 @@ def get_review_model(vlm_name):
     elif 'llama' in vlm_name:
         review_model = 'gpt-4o'
     elif 'deepseek' in vlm_name:
+        review_model = 'gpt-4o'
+    elif 'medflamingo' in vlm_name:
+        review_model = 'gpt-4o'
+    elif 'llavamed' in vlm_name:
+        review_model = 'gpt-4o'
+    elif 'conch' in vlm_name:
         review_model = 'gpt-4o'
     else:
         raise ValueError(f"{vlm_name} not found among the models. Add to get_review_model in dataset_info_and_paths.py")
@@ -446,6 +454,17 @@ def get_result_path(vlm_name, dataset_name, task_type, reviewed, file_type_exten
                   'tokens_path': tokens_path}
 
     return result_paths
+
+def get_text_prompt_answer_path(vlm_name, file_type_extension=None):
+    global_info = get_global_info()
+    results_root_folder_path = global_info['results_root_folder_path']
+
+    text_prompt_answer_path = os.path.join(results_root_folder_path, f'text_prompt_answers_{vlm_name}_{time.strftime("%Y-%m-%d_%H-%M-%S")}')
+
+    if file_type_extension != None:
+        text_prompt_answer_path = text_prompt_answer_path + '.' + file_type_extension
+
+    return text_prompt_answer_path
 
 def get_conf_mat_path(vlm_name, dataset_name, task_type, reviewed, file_type_extension=None):
     """

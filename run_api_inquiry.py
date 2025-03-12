@@ -6,7 +6,7 @@ Created on Fri Dec 13 17:29:35 2024
 @author: ivan
 """
 
-from dataset_info_and_paths import get_dataset_info, get_result_path, get_review_model, get_global_info 
+from dataset_info_and_paths import get_dataset_info, get_result_path, get_review_model, get_global_info, get_text_prompt_answer_path
 from prompts import get_prompt
 import re
 import os
@@ -417,44 +417,89 @@ def run_api_review(vlm_name: str, dataset_name: str, task_type: str, **kwargs):
     
     return reviewed_answers_df, total_tokens_used_review_df
 
-# for dataset_name in ['AML_Matek', 'Bone_Marrow_Cyto', 'WBCAtt', 'Acevedo']:
-#     vlm_name = 'gemini-2.0-flash-exp' #'gpt-4o' # 'blabla'
-#     task_type = '1shot_classification'
-#     run_api_1shot_prompt_classification(vlm_name, dataset_name)
-#     # run_api_review(vlm_name, dataset_name, task_type)
+def run_text_prompt(vlm_name: str, prompt: str, **kwargs):
+    """
+    Run API review on previously generated answers.
+    
+    Args:
+        vlm_name (str): Name of the VLM model that was used to generate the answers
+        prompt (str): Prompt to use for the text prompt
+        **kwargs: Additional arguments to pass to api_visual_inquiry
+        
+    Returns:
+        tuple: (answer, total_tokens_used) containing the answer and token usage
+    """
+   
+    model_importer = ModelImporter(vlm_name)
+    # api_visual_inquiry = model_importer.api_visual_inquiry
+    api_text_inquiry = model_importer.api_text_inquiry
+    kwargs = model_importer.kwargs
+    # sleep_time = model_importer.sleep_time
+
+    
+    text_prompt_answer_path = get_text_prompt_answer_path(vlm_name, file_type_extension='txt')
+
+    answer, usage = api_text_inquiry(prompt, vlm_name=vlm_name, **kwargs)
+
+    result = f"Prompt: {prompt}\nAnswer: {answer}\nUsage: {usage}"
+
+    with open(text_prompt_answer_path, 'w') as f:
+        f.write(result)
+
+    print(result)
+
+    return result
 
 
 
-# vlm_name = 'ft:gpt-4o-2024-08-06:personal:bonemarrow-n-pl-5:AuoO9vo2'
-# dataset_name = 'Bone_Marrow_Cyto'
+# if __name__ == "__main__":
+#     import argparse
+    
+#     parser = argparse.ArgumentParser(description='Run VLM model evaluation on cytomorphology datasets')
+#     parser.add_argument('--vlm_name', type=str, help='Name of VLM model to use.')
+#     parser.add_argument('--dataset_name', type=str, choices=get_global_info()['available_datasets'],
+#                       help='Name of dataset to evaluate.')
+#     parser.add_argument('--task_type', type=str, choices=get_global_info()['available_task_types'],
+#                       help='Type of task to evaluate.')
+#     parser.add_argument('--run_review', type=int, default=0,
+#                       help='Whether to also run review after inquiry')
 
-# run_api_0shot_classification(vlm_name, dataset_name)
+#     args = parser.parse_args()
 
-# vlm_name = 'gpt-4o'
-# dataset_name = 'Acevedo'
+#     if args.task_type == '0shot_classification':
+#         # Run the API inquiry
+#         run_api_0shot_classification(args.vlm_name, args.dataset_name)
+#     elif args.task_type == '1shot_classification':
+#         run_api_1shot_prompt_classification(args.vlm_name, args.dataset_name)
+        
+#     # Optionally run review
+#     if args.run_review:
+#         run_api_review(args.vlm_name, args.dataset_name, args.task_type)
 
-# run_api_1shot_prompt_classification(vlm_name, dataset_name)
+
 
 if __name__ == "__main__":
-    import argparse
-    
-    parser = argparse.ArgumentParser(description='Run VLM model evaluation on cytomorphology datasets')
-    parser.add_argument('--vlm_name', type=str, help='Name of VLM model to use.')
-    parser.add_argument('--dataset_name', type=str, choices=get_global_info()['available_datasets'],
-                      help='Name of dataset to evaluate.')
-    parser.add_argument('--task_type', type=str, choices=get_global_info()['available_task_types'],
-                      help='Type of task to evaluate.')
-    parser.add_argument('--run_review', type=int, default=0,
-                      help='Whether to also run review after inquiry')
 
-    args = parser.parse_args()
+    prompt = """Examine the peripheral blood cell types listed below and provide their percentage in peripheral blood. 
+    Band Neutrophil 
+    Basophil 
+    Eosinophil 
+    Erythroblast 
+    Lymphocyte 
+    Metamyelocyte 
+    Monocyte 
+    Myelocyte 
+    Platelet 
+    Promyelocyte 
+    Segmented Neutrophil"""
 
-    if args.task_type == '0shot_classification':
-        # Run the API inquiry
-        run_api_0shot_classification(args.vlm_name, args.dataset_name)
-    elif args.task_type == '1shot_classification':
-        run_api_1shot_prompt_classification(args.vlm_name, args.dataset_name)
-        
-    # Optionally run review
-    if args.run_review:
-        run_api_review(args.vlm_name, args.dataset_name, args.task_type)
+    global_info = get_global_info()
+
+    available_models = global_info['available_models']
+
+    for vlm_name in available_models:
+        print(f"Running text prompt for {vlm_name}")
+        try:
+            run_text_prompt(vlm_name, prompt)
+        except Exception as e:
+            print(f"Error running text prompt for {vlm_name}: {e}")
