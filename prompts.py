@@ -360,6 +360,40 @@ def get_prompt(dataset_name: str, task_type: str, reviewed=False):
     Cellular changes consistent with herpes simplex virus
     Coccobacilli/Shift in flora suggestive of bacterial vaginosis""", }
     
+    prompt_MLL23_0shot_classification = {
+        "cell_type": """Consider the input image. Take a moment to think. Consider what features do the cells in the image have. Which of the white blood cell types listed below is shown? 
+    Write just the cell type and nothing else. Choose one of the possible labels provided below (exactly as written here):
+    band neutrophil
+    basophil
+    eosinophil
+    erythroblast
+    lymphocyte
+    metamyelocyte
+    monocyte
+    myelocyte
+    platelet
+    promyelocyte
+    segmented neutrophil"""
+    }
+
+    prompt_MLL23_0shot_classification_review = {
+        "cell_type": """Which of the classes listed below does the chatbot's answer regarding the cell type belong to? Write just the label (exacly as written below) and nothing else:
+    NA (Chatbot is unsure/ambiguious/doesn't know/no answer provided/class cannot be determined)
+    band neutrophil
+    basophil
+    eosinophil
+    erythroblast
+    lymphocyte
+    metamyelocyte
+    monocyte
+    myelocyte
+    platelet
+    promyelocyte
+    segmented neutrophil"""
+    }
+        
+    prompt_MLL23_nonstructured = {'cell_type': 'Consider the input image. Take a moment to think. Consider what features do the cells in the image have. Which type of white blood cell is shown? Write just the cell type and nothing else.'}
+
     if dataset_name == 'AML_Matek':
         if task_type == '0shot_classification':
             if reviewed==False:
@@ -403,6 +437,15 @@ def get_prompt(dataset_name: str, task_type: str, reviewed=False):
                 return prompt_HiCervix_0shot_classification
             elif reviewed==True:
                 return prompt_HiCervix_0shot_classification_review
+        elif task_type == 'nonstructured':
+            return None
+        
+    elif dataset_name == 'MLL23':
+        if task_type == '0shot_classification':
+            if reviewed==False:
+                return prompt_MLL23_0shot_classification
+            elif reviewed==True:
+                return prompt_MLL23_0shot_classification_review
         elif task_type == 'nonstructured':
             return None
 

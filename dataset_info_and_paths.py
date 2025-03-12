@@ -22,7 +22,7 @@ def get_global_info():
             - plots_root_folder_path (str): Path to root folder for plots
     """
 
-    available_datasets = ['AML_Matek', 'Bone_Marrow_Cyto', 'WBCAtt', 'Acevedo', 'HiCervix']
+    available_datasets = ['AML_Matek', 'Bone_Marrow_Cyto', 'WBCAtt', 'Acevedo', 'HiCervix', 'MLL23']
     available_task_types = ['0shot_classification','1shot_classification', 'nonstructured']
     available_model_families = ['gemini', 'gpt', 'llama', 'deepseek']
     available_models = ['gemini-2.0-flash-exp', 'gpt-4o', 'llama-3.2-multimodal-11B', 'deepseek-vl2-tiny', 'deepseek-vl2-small',
@@ -46,7 +46,7 @@ def get_global_info():
                           'deepseek': 'deepseek-vl2-small'}
 
     CLUSTER_ROOT_FOLDER_PATH = '/lustre/groups/labs/marr/qscd01/projects/cytology_vlm_eval'
-    LOCAL_ROOT_FOLDER_PATH = '/home/ivan/Helmholtz/VLMevaluation/'
+    LOCAL_ROOT_FOLDER_PATH = '/Users/furkan.dasdelen/Library/CloudStorage/OneDrive-HelmholtzZentrumMünchen/Desktop/Marr_lab/LVLM_project'
 
     # Check if LOCAL_ROOT_FOLDER_PATH exists
     if os.path.exists(CLUSTER_ROOT_FOLDER_PATH):
@@ -296,6 +296,26 @@ def get_dataset_info(dataset_name, dataset_type):
         elif cluster_local == 'local':
             original_full_dataset_path = None
             dataset_csv_path = '/Users/juliaschafer/Helmholtz/VLMevaluation/Datasets/papsmear_dataset_processed/HiCervix.csv'
+
+        n_samples_per_label = 50
+        abbreviation_dict_path = None
+
+        paths_column_in_csv = 'Path'
+        sampling_label_column_in_csv = 'Label'
+        which_classes = 'all' 
+        column_labels_to_keep=[sampling_label_column_in_csv]
+        ground_truth_columns_conf_mat = ['label']
+        predicted_columns_conf_mat = ['cell_type']
+
+    elif dataset_name == 'MLL23':
+        published_dataset_location = ''
+        published_annotations_location = ''
+        if cluster_local == 'cluster':
+            original_full_dataset_path = '/lustre/groups/labs/marr/qscd01/datasets/240416_MLL23'
+            dataset_csv_path = '/lustre/groups/labs/marr/qscd01/projects/cytology_vlm_eval/Datasets/MLL23_path_labels.csv'
+        elif cluster_local == 'local':
+            original_full_dataset_path = '/Users/furkan.dasdelen/Library/CloudStorage/OneDrive-HelmholtzZentrumMünchen/Desktop/Marr_lab/LVLM_project/Datasets/MLL23/test'
+            dataset_csv_path = '/Users/furkan.dasdelen/Library/CloudStorage/OneDrive-HelmholtzZentrumMünchen/Desktop/Marr_lab/LVLM_project/Datasets/MLL23/test/MLL23_test_labels.csv'
 
         n_samples_per_label = 50
         abbreviation_dict_path = None
