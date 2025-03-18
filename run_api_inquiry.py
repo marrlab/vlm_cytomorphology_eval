@@ -105,19 +105,22 @@ class ModelImporter:
 
 
 
-def run_api_0shot_classification(vlm_name, dataset_name):
+def run_api_0shot_classification_or_explainability(vlm_name, dataset_name, task_type):    
     """
     Run visual language model API inquiries on a dataset of images.
     
     Args:
         vlm_name (str): Name of the visual language model to use (see get_global_info()['recommended_models'])
         dataset_name (str): Name of the dataset to evaluate (see get_global_info()['available_datasets'])
-        
+        task_type (str): Type of task (see get_global_info()['available_task_types'])
     Returns:
         tuple: A tuple containing:
             - answers_df (pd.DataFrame): DataFrame with image names and model answers for each category
             - total_tokens_used_df (pd.DataFrame): DataFrame with image names and token usage for each category
     """
+
+    if task_type not in ['0shot_classification', 'explainability']:
+        raise ValueError("task_type must be either '0shot_classification' or 'explainability'")
 
     model_importer = ModelImporter(vlm_name)
     api_visual_inquiry = model_importer.api_visual_inquiry
@@ -129,7 +132,7 @@ def run_api_0shot_classification(vlm_name, dataset_name):
 
     vlm_eval_subset_folder_path = dataset_info['vlm_eval_subset_folder_path']
 
-    prompt = get_prompt(dataset_name, '0shot_classification', reviewed=False)
+    prompt = get_prompt(dataset_name, task_type, reviewed=False)
 
     categories = [col for col in list(prompt.keys()) if col != 'image_name']   
  
@@ -148,8 +151,8 @@ def run_api_0shot_classification(vlm_name, dataset_name):
     answers_df = pd.DataFrame(columns=['image_name', *categories])
     total_tokens_used_df = pd.DataFrame(columns=['image_name', *categories])
     
-    answers_path_base = get_result_path(vlm_name, dataset_name, '0shot_classification', reviewed=False, file_type_extension=None)['answers_path']
-    usage_path_base = get_result_path(vlm_name, dataset_name, '0shot_classification', reviewed=False, file_type_extension=None)['tokens_path']
+    answers_path_base = get_result_path(vlm_name, dataset_name, task_type, reviewed=False, file_type_extension=None)['answers_path']
+    usage_path_base = get_result_path(vlm_name, dataset_name, task_type, reviewed=False, file_type_extension=None)['tokens_path']
 
     # Process each image
     for j, category in enumerate(categories):
@@ -468,54 +471,69 @@ def run_text_prompt(vlm_name: str, prompt: str, **kwargs):
 
 
 
-# if __name__ == "__main__":
-#     import argparse
-    
-#     parser = argparse.ArgumentParser(description='Run VLM model evaluation on cytomorphology datasets')
-#     parser.add_argument('--vlm_name', type=str, help='Name of VLM model to use.')
-#     parser.add_argument('--dataset_name', type=str, choices=get_global_info()['available_datasets'],
-#                       help='Name of dataset to evaluate.')
-#     parser.add_argument('--task_type', type=str, choices=get_global_info()['available_task_types'],
-#                       help='Type of task to evaluate.')
-#     parser.add_argument('--run_review', type=int, default=0,
-#                       help='Whether to also run review after inquiry')
-
-#     args = parser.parse_args()
-
-#     if args.task_type == '0shot_classification':
-#         # Run the API inquiry
-#         run_api_0shot_classification(args.vlm_name, args.dataset_name)
-#     elif args.task_type == '1shot_classification':
-#         run_api_1shot_prompt_classification(args.vlm_name, args.dataset_name)
-        
-#     # Optionally run review
-#     if args.run_review:
-#         run_api_review(args.vlm_name, args.dataset_name, args.task_type)
-
-
-
 if __name__ == "__main__":
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='Run VLM model evaluation on cytomorphology datasets')
+    parser.add_argument('--vlm_name', type=str, help='Name of VLM model to use.')
+    parser.add_argument('--dataset_name', type=str, choices=get_global_info()['available_datasets'],
+                      help='Name of dataset to evaluate.')
+    parser.add_argument('--task_type', type=str, choices=get_global_info()['available_task_types'],
+                      help='Type of task to evaluate.')
+    parser.add_argument('--run_review', type=int, default=0,
+                      help='Whether to also run review after inquiry')
 
-    prompt = """Examine the peripheral blood cell types listed below and provide their percentage in peripheral blood. 
-    Band Neutrophil 
-    Basophil 
-    Eosinophil 
-    Erythroblast 
-    Lymphocyte 
-    Metamyelocyte 
-    Monocyte 
-    Myelocyte 
-    Platelet 
-    Promyelocyte 
-    Segmented Neutrophil"""
+    args = parser.parse_args()
 
-    global_info = get_global_info()
+    if args.task_type == '0shot_classification' or args.task_type == 'explainability':
+        # Run the API inquiry
+        run_api_0shot_classification_or_explainability(args.vlm_name, args.dataset_name, args.task_type)
+    elif args.task_type == '1shot_classification':
+        run_api_1shot_prompt_classification(args.vlm_name, args.dataset_name)
+        
+    # Optionally run review
+    if args.run_review:
+        run_api_review(args.vlm_name, args.dataset_name, args.task_type)
 
-    available_models = global_info['available_models']
 
-    for vlm_name in available_models:
-        print(f"Running text prompt for {vlm_name}")
-        try:
-            run_text_prompt(vlm_name, prompt)
-        except Exception as e:
-            print(f"Error running text prompt for {vlm_name}: {e}")
+
+# if __name__ == "__main__":
+
+#     # prompt = """Examine the peripheral blood cell types listed below and provide their percentage in peripheral blood. 
+#     # Band Neutrophil 
+#     # Basophil 
+#     # Eosinophil 
+#     # Erythroblast 
+#     # Lymphocyte 
+#     # Metamyelocyte 
+#     # Monocyte 
+#     # Myelocyte 
+#     # Platelet 
+#     # Promyelocyte 
+#     # Segmented Neutrophil"""
+        
+    
+#     prompt = """Examine the peripheral blood cell types listed below and provide their absolute counts per cubic millimeter (mm³) in peripheral blood. 
+#     Band Neutrophil 
+#     Basophil 
+#     Eosinophil 
+#     Erythroblast 
+#     Lymphocyte 
+#     Metamyelocyte 
+#     Monocyte 
+#     Myelocyte 
+#     Platelet 
+#     Promyelocyte 
+#     Segmented Neutrophil"""
+
+#     global_info = get_global_info()
+
+#     available_models = global_info['available_models']
+
+    # for vlm_name in available_models:
+    #     # if 'deepseek' in vlm_name:
+    #     print(f"Running text prompt for {vlm_name}")
+    #     try:
+    #         run_text_prompt(vlm_name, prompt)
+    #     except Exception as e:
+    #         print(f"Error running text prompt for {vlm_name}: {e}")

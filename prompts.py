@@ -161,6 +161,48 @@ def get_prompt(dataset_name: str, task_type: str, reviewed=False):
     Segmented Neutrophil"""
     }
         
+    prompt_Acevedo_explainability = {
+        "cell_type": """Consider the input image. Take a moment to think. Consider what features do the cells in the image have. Which of the white blood cell types listed below is shown? 
+    Write just the cell type and nothing else. Choose one of the possible labels provided below (exactly as written here):
+    Band Neutrophil
+    Basophil
+    Eosinophil
+    Erythroblast
+    Lymphocyte
+    Metamyelocyte
+    Monocyte
+    Myelocyte
+    Platelet
+    Promyelocyte
+    Segmented Neutrophil
+    
+    Now consider the cell features listed below. Think how much each of them contributed to your cell classification decision. 
+    Next to each feature, write an importance score how much the feature was important for you classification decision. The scores should be float numbers. All the scores together should sum to 100.
+    
+    Cell Shape 
+    Cell Size
+    Nuclear Shape 
+    Nuclear Segmentation 
+    Nuclear-to-Cytoplasmic Ratio 
+    Nuclear Membrane Appearance 
+    Nucleoli 
+    Chromatin Pattern     
+    Cytoplasmic Volume 
+    Cytoplasmic Color 
+    Cytoplasmic Border
+    Granule Presence 
+    Granule Type      
+    Inclusions (Presence of Auer rods, Döhle bodies, or other cytoplasmic inclusions)    
+    Cytoplasmic Basophilia 
+    Erythrocytes
+    Platelets, Thrombocytes
+    Surrounding of the cell 
+    Technical properties of the image (resolution, light, noise, etc.)    
+
+    Are there any other features that you consider important for the classification decision? If yes, write them below.
+    """
+    }
+        
     prompt_Acevedo_nonstructured = {'cell_type': 'Consider the input image. Take a moment to think. Consider what features do the cells in the image have. Which type of white blood cell is shown? Write just the cell type and nothing else.'}
 
 
@@ -421,6 +463,8 @@ def get_prompt(dataset_name: str, task_type: str, reviewed=False):
                 return prompt_Acevedo_0shot_classification_review
         elif task_type == 'nonstructured':
             return prompt_Acevedo_nonstructured
+        elif task_type == 'explainability':
+            return prompt_Acevedo_explainability
 
     elif dataset_name == 'WBCAtt':
         if task_type == '0shot_classification':
@@ -448,6 +492,9 @@ def get_prompt(dataset_name: str, task_type: str, reviewed=False):
                 return prompt_MLL23_0shot_classification_review
         elif task_type == 'nonstructured':
             return None
+
+    else:
+        raise ValueError(f"Task type {task_type} not found for dataset {dataset_name}. Check prompts.py and add if needed.")
 
 # dataset_name='WBCAtt'
 # task_type='review'
