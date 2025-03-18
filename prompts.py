@@ -176,7 +176,7 @@ def get_prompt(dataset_name: str, task_type: str, reviewed=False):
     Promyelocyte
     Segmented Neutrophil
     
-    Now consider the cell features listed below. Think how much each of them contributed to your cell classification decision. 
+    Now consider the cell features listed below. Think how much each of them contributed to your cell classification decision that you made above. 
     Next to each feature, write an importance score how much the feature was important for you classification decision. The scores should be float numbers. All the scores together should sum to 100.
     
     Cell Shape 
