@@ -23,7 +23,7 @@ def get_global_info():
     """
 
     available_datasets = ['AML_Matek', 'Bone_Marrow_Cyto', 'WBCAtt', 'Acevedo', 'HiCervix', 'MLL23']
-    available_task_types = ['0shot_classification','1shot_classification', 'nonstructured']
+    available_task_types = ['0shot_classification','1shot_classification', 'explainability', 'nonstructured']
     available_model_families = ['gemini', 'gpt', 'llama', 'deepseek']
     available_models = ['gemini-2.0-flash-exp', 'gpt-4o', 'llama-3.2-multimodal-11B', 'deepseek-vl2-tiny', 'deepseek-vl2-small',
                         'medflamingo',  'llavamed', 'conch',
