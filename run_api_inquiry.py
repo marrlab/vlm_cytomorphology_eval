@@ -55,7 +55,7 @@ class ModelImporter:
             self.api_visual_inquiry = gpt_api_visual_inquiry
             self.api_text_inquiry = gpt_api_text_inquiry
             self.api_multiimage_inquiry = gpt_multiimage_api_visual_inquiry
-            self.sleep_time = 1
+            self.sleep_time = 2
         elif 'gemini' in self.vlm_name:
             from vlm_models.gemini_api import gemini_api_visual_inquiry, gemini_api_text_inquiry, gemini_multiimage_api_visual_inquiry
             self.kwargs = {}
@@ -169,6 +169,14 @@ def run_api_0shot_classification_or_explainability(vlm_name, dataset_name, task_
             
             # Full path to image
             image_path = os.path.join(vlm_eval_subset_folder_path, image_file)
+
+            # # Display the current image
+            # import matplotlib.pyplot as plt 
+            # img = plt.imread(image_path)
+            # plt.figure()
+            # plt.imshow(img)
+            # plt.axis('off')
+            # plt.show()
             
             # Run API inquiry
             answer, usage = api_visual_inquiry(image_path, prompt_text, vlm_name=vlm_name, **kwargs)
@@ -436,6 +444,166 @@ def run_api_review(vlm_name: str, dataset_name: str, task_type: str, **kwargs):
     
     return reviewed_answers_df, total_tokens_used_review_df
 
+
+def run_api_explainability_review(vlm_name: str, dataset_name: str, **kwargs):
+    """
+    Run API review on previously generated answers.
+    
+    Args:
+        vlm_name (str): Name of the VLM model that was used to generate the answers
+        dataset_name (str): Name of the dataset to evaluate (see get_global_info()['available_datasets'])
+        **kwargs: Additional arguments to pass to api_visual_inquiry
+        
+    Returns:
+        tuple: (reviewed_answers_df, total_tokens_used_review_df) containing the reviewed answers and token usage
+    """
+
+    task_type = 'explainability'
+    review_model = get_review_model(vlm_name)
+    
+    model_importer = ModelImporter(review_model)
+    # api_visual_inquiry = model_importer.api_visual_inquiry
+    api_text_inquiry = model_importer.api_text_inquiry
+    kwargs = model_importer.kwargs
+    sleep_time = model_importer.sleep_time
+
+    features = get_prompt(dataset_name, task_type = 'explainability', reviewed=True)
+
+        
+    # Load original answers
+    answers_path = get_result_path(vlm_name, dataset_name, task_type, reviewed=False, file_type_extension='csv')['answers_path']
+    original_answers_df = pd.read_csv(answers_path)
+    original_answers_column = list(get_prompt(dataset_name, task_type = 'explainability', reviewed=False).keys())[0]
+    
+    # Load ground truth
+    dataset_info = get_dataset_info(dataset_name, 'test')    
+    ground_truth_df_path = dataset_info['vlm_eval_subset_labels_path']
+    ground_truth_columns = dataset_info['ground_truth_columns_conf_mat']
+    gt_col = ground_truth_columns[0]
+    ground_truth_df = pd.read_csv(ground_truth_df_path)
+    
+    # Create dataframes to store results
+    reviewed_answers_df = pd.DataFrame(index=original_answers_df.index, columns=['image_name', 'ground_truth_label', 'predicted_label', *features])
+    total_tokens_used_review_df = pd.DataFrame(index=original_answers_df.index, columns=['image_name', 'ground_truth_label', 'predicted_label', *features])    
+    
+    answers_path_base = get_result_path(vlm_name, dataset_name, task_type, reviewed=True, file_type_extension=None)['answers_path']
+    usage_path_base = get_result_path(vlm_name, dataset_name, task_type, reviewed=True, file_type_extension=None)['tokens_path']
+
+    prompt_classification = get_prompt(dataset_name, task_type = '0shot_classification', reviewed=True)
+
+    # Process each image
+    for j, feature in enumerate(features):
+
+        if j==0:
+            for i, row in original_answers_df.iterrows():
+                image_name = row['image_name']
+                ground_truth_label = ground_truth_df.loc[ground_truth_df['image_name'] == image_name, gt_col].values[0]
+                
+                reviewed_answers_df.loc[i, 'image_name'] = image_name
+                reviewed_answers_df.loc[i, 'ground_truth_label'] = ground_truth_label
+
+                # Get original answer for this category
+                original_answer = row[original_answers_column]
+
+                # Split original answer into first line (predicted label) and rest of explanation
+                answer_lines = original_answer.split('\n', 1)
+                predicted_label = answer_lines[0].strip()
+                explanation = answer_lines[1].strip() if len(answer_lines) > 1 else ""
+                
+                # print(predicted_label)
+                # print('-------------')
+                # print(explanation)
+
+                # Create review prompt by combining original answer with review prompt
+                review_prompt = f"Chatbot answered: {predicted_label}\n{prompt_classification[original_answers_column]}"
+
+                print(review_prompt)
+
+                 # Run API inquiry
+                answer, usage = api_text_inquiry(review_prompt, vlm_name=review_model, **kwargs)
+                
+                print('Answer:\n'+str(answer))
+                
+                # Store results
+                reviewed_answers_df.loc[i, 'predicted_label'] = answer
+                total_tokens_used_review_df.loc[i, 'predicted_label'] = usage
+                
+                # Sleep to avoid rate limit
+                time.sleep(sleep_time)
+                
+                # Save every 25 images
+                if (i + 1) % 25 == 0 or i == len(original_answers_df) - 1:
+                    # Save reviewed answers dataframe
+                    reviewed_answers_df.to_csv(answers_path_base + '.csv', index=False)
+                    reviewed_answers_df.to_excel(answers_path_base + '.xlsx', index=False)
+                    
+                    # Save usage dataframe
+                    total_tokens_used_review_df.to_csv(usage_path_base + '.csv', index=False)
+                    total_tokens_used_review_df.to_excel(usage_path_base + '.xlsx', index=False)
+                    
+                
+
+
+        # Get review prompt text for this categoryand ignore any potentially attached images.
+        prompt_text = f"Consider only the chatbot's answer. You will find a list of features with numbers next to them. These are scores that the chatbot assigned to the features. What was the score (float number) that the chatbot assigned to the feature {feature}? Write just the number and nothing else. If you cannot extract the score, write NaN."
+        
+        for i, row in original_answers_df.iterrows():
+            # Print progress every 25 images
+            if i % 25 == 0:
+                print(f"Reviewing with {review_model} the {dataset_name} answers generated by {vlm_name}: feature {j+1}/{len(features)}, image {i+1}/{len(original_answers_df)}")
+            
+            # Get image name from original answers dataframe
+            image_name = row['image_name']
+                        
+            # Get original answer for this category
+            original_answer = row[original_answers_column]
+
+            # Split original answer into first line (predicted label) and rest of explanation
+            answer_lines = original_answer.split('\n', 1)
+            predicted_label = answer_lines[0].strip()
+            explanation = answer_lines[1].strip() if len(answer_lines) > 1 else ""
+            
+            # Create review prompt by combining original answer with review prompt
+            review_prompt = f"Chatbot answered: {explanation}\n{prompt_text}"
+
+            print(review_prompt)
+            
+            # Run API inquiry
+            answer, usage = api_text_inquiry(review_prompt, vlm_name=review_model, **kwargs)
+            
+            print('Answer:\n'+str(answer))
+
+            # Try to convert answer to float, use NaN if not possible
+            try:
+                # Extract number from text if present
+                answer = ''.join(c for c in str(answer) if c.isdigit() or c == '.' or c == '-')
+                answer = float(answer) if answer else float('nan')
+            except (ValueError, TypeError):
+                answer = float('nan')
+            
+            # Store results
+            # reviewed_answers_df.loc[i, 'image_name'] = image_name
+            reviewed_answers_df.loc[i, feature] = answer
+            # total_tokens_used_review_df.loc[i, 'image_name'] = image_name
+            total_tokens_used_review_df.loc[i, feature] = usage
+            
+            # Sleep to avoid rate limit
+            time.sleep(sleep_time)
+            
+            # Save every 25 images
+            if (i + 1) % 25 == 0 or i == len(original_answers_df) - 1:
+                # Save reviewed answers dataframe
+                reviewed_answers_df.to_csv(answers_path_base + '.csv', index=False)
+                reviewed_answers_df.to_excel(answers_path_base + '.xlsx', index=False)
+                
+                # Save usage dataframe
+                total_tokens_used_review_df.to_csv(usage_path_base + '.csv', index=False)
+                total_tokens_used_review_df.to_excel(usage_path_base + '.xlsx', index=False)
+    
+    return reviewed_answers_df, total_tokens_used_review_df
+
+
+
 def run_text_prompt(vlm_name: str, prompt: str, **kwargs):
     """
     Run API review on previously generated answers.
@@ -470,6 +638,12 @@ def run_text_prompt(vlm_name: str, prompt: str, **kwargs):
     return result
 
 
+# vlm_name = 'gpt-4o'
+# dataset_name = "Acevedo"
+# task_type = 'explainability'
+
+# # run_api_explainability_review(vlm_name, dataset_name)
+# run_api_0shot_classification_or_explainability(vlm_name, dataset_name, task_type)
 
 if __name__ == "__main__":
     import argparse
@@ -485,15 +659,20 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.task_type == '0shot_classification' or args.task_type == 'explainability':
-        # Run the API inquiry
-        run_api_0shot_classification_or_explainability(args.vlm_name, args.dataset_name, args.task_type)
-    elif args.task_type == '1shot_classification':
-        run_api_1shot_prompt_classification(args.vlm_name, args.dataset_name)
+    # if args.task_type == '0shot_classification' or args.task_type == 'explainability':
+    #     # Run the API inquiry
+    #     run_api_0shot_classification_or_explainability(args.vlm_name, args.dataset_name, args.task_type)
+    # elif args.task_type == '1shot_classification':
+    #     run_api_1shot_prompt_classification(args.vlm_name, args.dataset_name)
         
     # Optionally run review
     if args.run_review:
-        run_api_review(args.vlm_name, args.dataset_name, args.task_type)
+        if args.task_type == 'explainability':
+            run_api_explainability_review(args.vlm_name, args.dataset_name)
+        else:
+            run_api_review(args.vlm_name, args.dataset_name, args.task_type)
+
+    # run_api_review(args.vlm_name, args.dataset_name, args.task_type)
 
 
 

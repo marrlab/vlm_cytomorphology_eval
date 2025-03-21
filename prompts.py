@@ -202,6 +202,29 @@ def get_prompt(dataset_name: str, task_type: str, reviewed=False):
     Are there any other features that you consider important for the classification decision? If yes, write them below.
     """
     }
+
+    features_Acevedo_explainability_review = [
+    'Cell Shape ',
+    'Cell Size',
+    'Nuclear Shape ',
+    'Nuclear Segmentation ',
+    'Nuclear-to-Cytoplasmic Ratio ',
+    'Nuclear Membrane Appearance ',
+    'Nucleoli ',
+    'Chromatin Pattern ',
+    'Cytoplasmic Volume ',
+    'Cytoplasmic Color ',
+    'Cytoplasmic Border',
+    'Granule Presence ',
+    'Granule Type ',
+    'Inclusions (Presence of Auer rods, Döhle bodies, or other cytoplasmic inclusions) ',
+    'Cytoplasmic Basophilia ',
+    'Erythrocytes',
+    'Platelets, Thrombocytes',
+    'Surrounding of the cell ',
+    'Technical properties of the image (resolution, light, noise, etc.) '
+    ]
+
         
     prompt_Acevedo_nonstructured = {'cell_type': 'Consider the input image. Take a moment to think. Consider what features do the cells in the image have. Which type of white blood cell is shown? Write just the cell type and nothing else.'}
 
@@ -464,7 +487,10 @@ def get_prompt(dataset_name: str, task_type: str, reviewed=False):
         elif task_type == 'nonstructured':
             return prompt_Acevedo_nonstructured
         elif task_type == 'explainability':
-            return prompt_Acevedo_explainability
+            if reviewed==False:
+                return prompt_Acevedo_explainability
+            elif reviewed==True:
+                return features_Acevedo_explainability_review
 
     elif dataset_name == 'WBCAtt':
         if task_type == '0shot_classification':

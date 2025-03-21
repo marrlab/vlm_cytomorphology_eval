@@ -46,7 +46,7 @@ def get_global_info():
                           'deepseek': 'deepseek-vl2-small'}
 
     CLUSTER_ROOT_FOLDER_PATH = '/lustre/groups/labs/marr/qscd01/projects/cytology_vlm_eval'
-    LOCAL_ROOT_FOLDER_PATH = '/Users/furkan.dasdelen/Library/CloudStorage/OneDrive-HelmholtzZentrumMünchen/Desktop/Marr_lab/LVLM_project'
+    LOCAL_ROOT_FOLDER_PATH = '/home/ivan/Helmholtz/VLMevaluation/' #'/Users/furkan.dasdelen/Library/CloudStorage/OneDrive-HelmholtzZentrumMünchen/Desktop/Marr_lab/LVLM_project'
 
     # Check if LOCAL_ROOT_FOLDER_PATH exists
     if os.path.exists(CLUSTER_ROOT_FOLDER_PATH):
