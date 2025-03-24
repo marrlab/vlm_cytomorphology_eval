@@ -592,6 +592,18 @@ def get_explainability_plot_path(dataset_name, cell_type, ground_truth_or_predic
     """
 
     plots_folder_path = get_plots_folder_path(dataset_name)
+    cell_type = cell_type.split(' (')[0] if ' (' in cell_type else cell_type
     explainability_plot_path = os.path.join(plots_folder_path, f'{dataset_name}_explainability_plot_{ground_truth_or_predicted}_{cell_type}{"_reviewed" if reviewed else ""}.{file_type_extension}')
 
     return explainability_plot_path
+
+ 
+def get_explainability_plot_vertical_path(dataset_name, ground_truth_or_predicted, reviewed, file_type_extension=None):   
+    """
+    Get path to the explainability plot file.
+    """
+
+    plots_folder_path = get_plots_folder_path(dataset_name)
+    explainability_plot_vertical_path = os.path.join(plots_folder_path, f'{dataset_name}_explainability_plot_vertical_{ground_truth_or_predicted}{"_reviewed" if reviewed else ""}.{file_type_extension}')
+
+    return explainability_plot_vertical_path
