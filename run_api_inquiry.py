@@ -119,7 +119,7 @@ def run_api_0shot_classification_or_explainability(vlm_name, dataset_name, task_
             - total_tokens_used_df (pd.DataFrame): DataFrame with image names and token usage for each category
     """
 
-    if task_type not in ['0shot_classification', 'explainability']:
+    if task_type not in ['nonstructured', '0shot_classification', 'explainability']:
         raise ValueError("task_type must be either '0shot_classification' or 'explainability'")
 
     model_importer = ModelImporter(vlm_name)
@@ -505,10 +505,16 @@ def run_api_explainability_review(vlm_name: str, dataset_name: str, **kwargs):
                 # Get original answer for this category
                 original_answer = row[original_answers_column]
 
-                # Split original answer into first line (predicted label) and rest of explanation
-                answer_lines = original_answer.split('\n', 1)
-                predicted_label = answer_lines[0].strip()
-                explanation = answer_lines[1].strip() if len(answer_lines) > 1 else ""
+                if 'llama' in vlm_name:
+                    # For Llama models, take just the last line as the predicted label
+                    # predicted_label = original_answer.strip().split('\n')[-1].strip()
+                    # explanation = '\n'.join(original_answer.strip().split('\n')[:-1])
+                    predicted_label = original_answer
+                else:
+                    # Split original answer into first line (predicted label) and rest of explanation
+                    answer_lines = original_answer.split('\n', 1)
+                    predicted_label = answer_lines[0].strip()
+                    explanation = answer_lines[1].strip() if len(answer_lines) > 1 else ""
                 
                 # print(predicted_label)
                 # print('-------------')
@@ -559,9 +565,16 @@ def run_api_explainability_review(vlm_name: str, dataset_name: str, **kwargs):
             original_answer = row[original_answers_column]
 
             # Split original answer into first line (predicted label) and rest of explanation
-            answer_lines = original_answer.split('\n', 1)
-            predicted_label = answer_lines[0].strip()
-            explanation = answer_lines[1].strip() if len(answer_lines) > 1 else ""
+            if 'llama' in vlm_name:
+                # For Llama models, take just the last line as the predicted label
+                # predicted_label = original_answer.strip().split('\n')[-1].strip()
+                # explanation = '\n'.join(original_answer.strip().split('\n')[:-1])
+                explanation = original_answer
+
+            else:
+                answer_lines = original_answer.split('\n', 1)
+                predicted_label = answer_lines[0].strip()
+                explanation = answer_lines[1].strip() if len(answer_lines) > 1 else ""
             
             # Create review prompt by combining original answer with review prompt
             review_prompt = f"Chatbot answered: {explanation}\n{prompt_text}"
@@ -659,11 +672,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # if args.task_type == '0shot_classification' or args.task_type == 'explainability':
-    #     # Run the API inquiry
-    #     run_api_0shot_classification_or_explainability(args.vlm_name, args.dataset_name, args.task_type)
-    # elif args.task_type == '1shot_classification':
-    #     run_api_1shot_prompt_classification(args.vlm_name, args.dataset_name)
+    if args.task_type in ['nonstructured', '0shot_classification', 'explainability']:
+        # Run the API inquiry
+        run_api_0shot_classification_or_explainability(args.vlm_name, args.dataset_name, args.task_type)
+    elif args.task_type == '1shot_classification':
+        run_api_1shot_prompt_classification(args.vlm_name, args.dataset_name)
         
     # Optionally run review
     if args.run_review:
@@ -672,7 +685,7 @@ if __name__ == "__main__":
         else:
             run_api_review(args.vlm_name, args.dataset_name, args.task_type)
 
-    # run_api_review(args.vlm_name, args.dataset_name, args.task_type)
+    run_api_review(args.vlm_name, args.dataset_name, args.task_type)
 
 
 

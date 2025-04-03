@@ -202,6 +202,25 @@ def get_prompt(dataset_name: str, task_type: str, reviewed=False):
     Are there any other features that you consider important for the classification decision? If yes, write them below.
     """
     }
+        
+    prompt_Acevedo_pixel_level_explainability = {
+        "cell_type": """Consider the input image. Take a moment to think. Consider what features do the cells in the image have. Which of the white blood cell types listed below is shown? 
+    Write just the cell type and nothing else. Choose one of the possible labels provided below (exactly as written here):
+    Band Neutrophil
+    Basophil
+    Eosinophil
+    Erythroblast
+    Lymphocyte
+    Metamyelocyte
+    Monocyte
+    Myelocyte
+    Platelet
+    Promyelocyte
+    Segmented Neutrophil
+    
+    Now plot an image highlighting which pixels in the image that we gave you were the most crucial for the classification decision you made. Paint very important pixels in red and pixels with intermediate importance in yellow.
+    """
+    }
 
     features_Acevedo_explainability_review = [
     'Cell Shape ',
@@ -226,7 +245,25 @@ def get_prompt(dataset_name: str, task_type: str, reviewed=False):
     ]
 
         
-    prompt_Acevedo_nonstructured = {'cell_type': 'Consider the input image. Take a moment to think. Consider what features do the cells in the image have. Which type of white blood cell is shown? Write just the cell type and nothing else.'}
+    prompt_Acevedo_nonstructured = {'cell_type': """Consider the input image. Take a moment to think. Consider what features do the cells in the image have. Which of the white blood cell types listed below is shown? 
+    Choose one of the possible labels provided below (exactly as written here):
+    Band Neutrophil
+    Basophil
+    Eosinophil
+    Erythroblast
+    Lymphocyte
+    Metamyelocyte
+    Monocyte
+    Myelocyte
+    Platelet
+    Promyelocyte
+    Segmented Neutrophil
+    
+    Explain in detail your decision and the reasoning that lead you to the decision. Which parts of the cells and features did you consider? 
+    
+    How certain are you about your classification? Which other labels could be correct? Why did you choose this label in the end?
+    """
+    }
 
 
     prompt_WBCAtt_0shot_classification = {'label': """Consider the input image. Take a moment to think. Consider what features do the cells in the image have. Which of the white blood cell types listed below is shown? Write just the cell type and nothing else. Choose one of the possible labels provided below (exactly as written here):

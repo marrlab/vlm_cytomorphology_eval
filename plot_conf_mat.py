@@ -36,6 +36,11 @@ def compute_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, comput
         predicted_df_path = get_result_path(vlm_name, dataset_name, task_type, reviewed, file_type_extension='csv')['answers_path']
         predicted_columns = dataset_info['predicted_columns_conf_mat']
         labels_dict_path = dataset_info['abbreviation_dict_path']
+        print(' ')
+        print('----------------------------------------')
+        print(predicted_df_path)
+        print('----------------------------------------')
+        print(' ')
         
         # Check if ground truth and predicted columns have same length
         if len(ground_truth_columns) != len(predicted_columns):
@@ -43,10 +48,16 @@ def compute_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, comput
 
         
         # print(f"predicted_df_path path: {predicted_df_path}")
+        
+        print(ground_truth_df_path)
     
         # Load the dataframes
         ground_truth_df = pd.read_csv(ground_truth_df_path)
+        
         predicted_df = pd.read_csv(predicted_df_path)
+        
+        print('-------> Found!')
+        print(predicted_df)
 
         # Rename ground truth columns to match predicted columns
         rename_dict = dict(zip(ground_truth_columns, predicted_columns))
@@ -83,6 +94,16 @@ def compute_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, comput
                 gt_label = row[gt_col]
                 # Find corresponding prediction
                 pred = predicted_df[predicted_df['image_name'] == row['image_name']]
+                
+                if len(pred) == 0:
+                    pred = predicted_df[predicted_df['image_name'] == row['image_name']+'.jpg']
+                    
+                if len(pred) == 0:
+                    pred = predicted_df[predicted_df['image_name'] == row['image_name']+'.png']
+                
+                
+                # print(row['image_name'])
+                # print(predicted_df['image_name'])
                 
                 if len(pred) == 0:
                     continue
@@ -133,6 +154,9 @@ def compute_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, comput
                     if not found_match:
                         pred_label = pred_answer
                         # print(f"No match found for {pred_answer}")
+                        
+                # print(gt_label)
+                # print(pred_label)
                 
                 # If predicted label not in ground truth labels, count as "not id"
                 if pred_label not in ground_truth_label_sets[gt_col]:
@@ -528,10 +552,10 @@ def plot_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, compute_c
 if __name__ == '__main__':
     compute_confmat_from_scratch = True
     global_info = get_global_info()
-    for dataset_name in global_info['available_datasets']:
+    for dataset_name in ['HiCervix']: #global_info['available_datasets']:
         # for vlm_family in global_info['available_model_families']:
         #     vlm_name = global_info['recommended_models'][vlm_family]
-        for vlm_name in global_info['available_models']:
+        for vlm_name in ['llavamed']: # global_info['available_models']:
             for task_type in [t for t in global_info['available_task_types'] if t != 'nonstructured']:
                 for reviewed in [True, False]:
                     try:
