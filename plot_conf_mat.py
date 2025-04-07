@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import os
 from dataset_info_and_paths import get_global_info, get_dataset_info, get_result_path, get_conf_mat_path, get_score_metrics_paths, get_score_metrics_report_path
 
-def compute_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, compute_confmat_from_scratch=True):
+def compute_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, compute_confmat_from_scratch=True, fold_number=None):
     """
     Compute confusion matrix comparing ground truth and predicted labels.
     
@@ -33,14 +33,14 @@ def compute_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, comput
     
         ground_truth_df_path = dataset_info['vlm_eval_subset_labels_path']
         ground_truth_columns = dataset_info['ground_truth_columns_conf_mat']
-        predicted_df_path = get_result_path(vlm_name, dataset_name, task_type, reviewed, file_type_extension='csv')['answers_path']
+        predicted_df_path = get_result_path(vlm_name, dataset_name, task_type, reviewed, file_type_extension='csv', fold_number=fold_number)['answers_path']
         predicted_columns = dataset_info['predicted_columns_conf_mat']
         labels_dict_path = dataset_info['abbreviation_dict_path']
-        print(' ')
-        print('----------------------------------------')
-        print(predicted_df_path)
-        print('----------------------------------------')
-        print(' ')
+        # print(' ')
+        # print('----------------------------------------')
+        # print(predicted_df_path)
+        # print('----------------------------------------')
+        # print(' ')
         
         # Check if ground truth and predicted columns have same length
         if len(ground_truth_columns) != len(predicted_columns):
@@ -49,15 +49,15 @@ def compute_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, comput
         
         # print(f"predicted_df_path path: {predicted_df_path}")
         
-        print(ground_truth_df_path)
+        # print(ground_truth_df_path)
     
         # Load the dataframes
         ground_truth_df = pd.read_csv(ground_truth_df_path)
         
         predicted_df = pd.read_csv(predicted_df_path)
         
-        print('-------> Found!')
-        print(predicted_df)
+        # print('-------> Found!')
+        # print(predicted_df)
 
         # Rename ground truth columns to match predicted columns
         rename_dict = dict(zip(ground_truth_columns, predicted_columns))
@@ -170,7 +170,7 @@ def compute_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, comput
                 
         return conf_matrix
 
-def compute_score_metrics(vlm_name, dataset_name, task_type, reviewed, compute_confmat_from_scratch, save_overall_metrics=True):
+def compute_score_metrics(vlm_name, dataset_name, task_type, reviewed, compute_confmat_from_scratch, fold_number=None, save_overall_metrics=True):
     """
     Compute score metrics based on confusion matrix.
     
@@ -185,7 +185,7 @@ def compute_score_metrics(vlm_name, dataset_name, task_type, reviewed, compute_c
     Returns:
         dict: Dictionary containing various score metrics computed from the confusion matrix
     """
-    conf_matrix = compute_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, compute_confmat_from_scratch)
+    conf_matrix = compute_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, compute_confmat_from_scratch, fold_number=fold_number)
 
     # Calculate metrics for each class
     per_class_metrics = {}
@@ -242,7 +242,7 @@ def compute_score_metrics(vlm_name, dataset_name, task_type, reviewed, compute_c
     }
 
     if save_overall_metrics:
-        score_metrics_paths = get_score_metrics_paths(task_type, reviewed, file_type_extension=None)
+        score_metrics_paths = get_score_metrics_paths(task_type, reviewed, fold_number=fold_number, file_type_extension=None)
 
         precision_score_path = score_metrics_paths['precision_score_path']
         # Check if precision scores file exists
@@ -251,9 +251,15 @@ def compute_score_metrics(vlm_name, dataset_name, task_type, reviewed, compute_c
         elif os.path.exists(precision_score_path + '.xlsx'):
             precision_scores_df = pd.read_excel(precision_score_path + '.xlsx', index_col=0)
         else:
-            precision_scores_df = pd.DataFrame(columns=[vlm_name], index=[dataset_name])        
+            if fold_number != None:
+                precision_scores_df = pd.DataFrame(columns=[vlm_name],index=[dataset_name+f', fold {fold_number}'])
+            else:
+                precision_scores_df = pd.DataFrame(columns=[vlm_name], index=[dataset_name])        
         # Update precision score for current dataset and VLM
-        precision_scores_df.loc[dataset_name, vlm_name] = overall_metrics['Precision (PPV)'].values[0]
+        if fold_number != None:
+            precision_scores_df.loc[dataset_name+f', fold {fold_number}', vlm_name] = overall_metrics['Precision (PPV)'].values[0]
+        else:
+            precision_scores_df.loc[dataset_name, vlm_name] = overall_metrics['Precision (PPV)'].values[0]
         # Sort index and columns alphabetically
         precision_scores_df = precision_scores_df.sort_index()
         precision_scores_df = precision_scores_df.reindex(sorted(precision_scores_df.columns), axis=1)
@@ -268,8 +274,14 @@ def compute_score_metrics(vlm_name, dataset_name, task_type, reviewed, compute_c
         elif os.path.exists(sensitivity_score_path + '.xlsx'):
             sensitivity_scores_df = pd.read_excel(sensitivity_score_path + '.xlsx', index_col=0)
         else:
-            sensitivity_scores_df = pd.DataFrame(columns=[vlm_name], index=[dataset_name])
-        sensitivity_scores_df.loc[dataset_name, vlm_name] = overall_metrics['Sensitivity (Recall)'].values[0]
+            if fold_number != None:
+                sensitivity_scores_df = pd.DataFrame(columns=[vlm_name], index=[dataset_name+f', fold {fold_number}'])
+            else:
+                sensitivity_scores_df = pd.DataFrame(columns=[vlm_name], index=[dataset_name])
+        if fold_number != None:
+            sensitivity_scores_df.loc[dataset_name+f', fold {fold_number}', vlm_name] = overall_metrics['Sensitivity (Recall)'].values[0]
+        else:
+            sensitivity_scores_df.loc[dataset_name, vlm_name] = overall_metrics['Sensitivity (Recall)'].values[0]
         # Sort index and columns alphabetically
         sensitivity_scores_df = sensitivity_scores_df.sort_index()
         sensitivity_scores_df = sensitivity_scores_df.reindex(sorted(sensitivity_scores_df.columns), axis=1)
@@ -284,8 +296,14 @@ def compute_score_metrics(vlm_name, dataset_name, task_type, reviewed, compute_c
         elif os.path.exists(f1_score_path + '.xlsx'):
             f1_scores_df = pd.read_excel(f1_score_path + '.xlsx', index_col=0)
         else:
-            f1_scores_df = pd.DataFrame(columns=[vlm_name], index=[dataset_name])
-        f1_scores_df.loc[dataset_name, vlm_name] = overall_metrics['F1 Score'].values[0]
+            if fold_number != None:
+                f1_scores_df = pd.DataFrame(columns=[vlm_name], index=[dataset_name+f', fold {fold_number}'])
+            else:
+                f1_scores_df = pd.DataFrame(columns=[vlm_name], index=[dataset_name])
+        if fold_number != None:
+            f1_scores_df.loc[dataset_name+f', fold {fold_number}', vlm_name] = overall_metrics['F1 Score'].values[0]
+        else:
+            f1_scores_df.loc[dataset_name, vlm_name] = overall_metrics['F1 Score'].values[0]
         # Sort index and columns alphabetically
         f1_scores_df = f1_scores_df.sort_index()
         f1_scores_df = f1_scores_df.reindex(sorted(f1_scores_df.columns), axis=1)
@@ -299,8 +317,14 @@ def compute_score_metrics(vlm_name, dataset_name, task_type, reviewed, compute_c
         elif os.path.exists(weighted_f1_score_path + '.xlsx'):
             weighted_f1_scores_df = pd.read_excel(weighted_f1_score_path + '.xlsx', index_col=0)
         else:   
-            weighted_f1_scores_df = pd.DataFrame(columns=[vlm_name], index=[dataset_name])
-        weighted_f1_scores_df.loc[dataset_name, vlm_name] = overall_metrics['Weighted F1 Score'].values[0]
+            if fold_number != None:
+                weighted_f1_scores_df = pd.DataFrame(columns=[vlm_name], index=[dataset_name+f', fold {fold_number}'])
+            else:
+                weighted_f1_scores_df = pd.DataFrame(columns=[vlm_name], index=[dataset_name])
+        if fold_number != None:
+            weighted_f1_scores_df.loc[dataset_name+f', fold {fold_number}', vlm_name] = overall_metrics['Weighted F1 Score'].values[0]
+        else:
+            weighted_f1_scores_df.loc[dataset_name, vlm_name] = overall_metrics['Weighted F1 Score'].values[0]
         # Sort index and columns alphabetically
         weighted_f1_scores_df = weighted_f1_scores_df.sort_index()
         weighted_f1_scores_df = weighted_f1_scores_df.reindex(sorted(weighted_f1_scores_df.columns), axis=1)
@@ -552,10 +576,10 @@ def plot_confusion_matrix(vlm_name, dataset_name, task_type, reviewed, compute_c
 if __name__ == '__main__':
     compute_confmat_from_scratch = True
     global_info = get_global_info()
-    for dataset_name in ['HiCervix']: #global_info['available_datasets']:
+    for dataset_name in global_info['available_datasets']:
         # for vlm_family in global_info['available_model_families']:
         #     vlm_name = global_info['recommended_models'][vlm_family]
-        for vlm_name in ['llavamed']: # global_info['available_models']:
+        for vlm_name in  global_info['available_models']:
             for task_type in [t for t in global_info['available_task_types'] if t != 'nonstructured']:
                 for reviewed in [True, False]:
                     try:

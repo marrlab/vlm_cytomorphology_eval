@@ -436,7 +436,7 @@ def get_plots_folder_path(dataset_name):
     return plots_folder_path
 
 
-def get_result_path(vlm_name, dataset_name, task_type, reviewed, file_type_extension=None):
+def get_result_path(vlm_name, dataset_name, task_type, reviewed, file_type_extension=None, fold_number=None):
     """
     Get path to a single results file based on VLM, dataset, task type and whether it is reviewed.
     
@@ -455,15 +455,22 @@ def get_result_path(vlm_name, dataset_name, task_type, reviewed, file_type_exten
 
     answers_folder_path = get_results_folder_path(dataset_name)['answers_folder_path']
 
+    if fold_number != None:
+        answers_folder_path = os.path.join(answers_folder_path, 'folds')
+        os.makedirs(answers_folder_path, exist_ok=True)
     
     answers_path = os.path.join(answers_folder_path, 
                                f'{dataset_name}_{task_type}_{vlm_name}_answers')
-    tokens_path = answers_path.replace('_answers', 'total_tokens_used')
+    tokens_path = answers_path.replace('_answers', 'total_tokens_used')    
 
     if reviewed:
         review_model = get_review_model(vlm_name)
         answers_path = answers_path + '_reviewed_' + review_model
         tokens_path = tokens_path + '_reviewed_' + review_model
+
+    if fold_number != None:#
+        answers_path = answers_path + f'_fold_{fold_number}'
+        tokens_path = tokens_path + f'_fold_{fold_number}'
 
     if file_type_extension != None:
         answers_path = answers_path + '.' + file_type_extension
@@ -486,7 +493,7 @@ def get_text_prompt_answer_path(vlm_name, file_type_extension=None):
 
     return text_prompt_answer_path
 
-def get_conf_mat_path(vlm_name, dataset_name, task_type, reviewed, file_type_extension=None):
+def get_conf_mat_path(vlm_name, dataset_name, task_type, reviewed, fold_number=None, file_type_extension=None):
     """
     Get path to a single confusion matrix file computed from results.
 
@@ -496,7 +503,7 @@ def get_conf_mat_path(vlm_name, dataset_name, task_type, reviewed, file_type_ext
         task_type (str): Type of task (see get_global_info()['available_task_types'])
         reviewed (bool): Whether to get path for reviewed or nonreviewed results
         file_type_extension (str, optional): File extension to append. One of 'csv', 'xlsx', 'pdf', 'png', or None. Defaults to None.
-        
+        fold_number (int, optional): Fold number to get path for. Defaults to None.
     Returns:
         str: Full path to confusion matrix file
     """
@@ -509,11 +516,21 @@ def get_conf_mat_path(vlm_name, dataset_name, task_type, reviewed, file_type_ext
 
     conf_mat_folder_path = get_results_folder_path(dataset_name)['conf_mat_folder_path']
     plots_folder_path = get_plots_folder_path(dataset_name)
+
+    if fold_number != None:
+        conf_mat_folder_path = os.path.join(conf_mat_folder_path, 'folds')
+        plots_folder_path = os.path.join(plots_folder_path, 'folds')
+        os.makedirs(conf_mat_folder_path, exist_ok=True)   
+        os.makedirs(plots_folder_path, exist_ok=True)   
     
     conf_mat_file_name = results_file_name + '_conf_mat'
     conf_mat_plot_file_name = conf_mat_file_name + '_plot'
     conf_mat_path = os.path.join(conf_mat_folder_path, conf_mat_file_name)
     conf_mat_plot_path = os.path.join(plots_folder_path, conf_mat_plot_file_name)
+
+    if fold_number != None:
+        conf_mat_path = conf_mat_path + f'_fold_{fold_number}'
+        conf_mat_plot_path = conf_mat_plot_path + f'_fold_{fold_number}'
     
     if file_type_extension != None:
         conf_mat_path = conf_mat_path + '.' + file_type_extension
@@ -526,7 +543,7 @@ def get_conf_mat_path(vlm_name, dataset_name, task_type, reviewed, file_type_ext
     return conf_mat_paths
 
 
-def get_score_metrics_paths(task_type, reviewed, file_type_extension=None):
+def get_score_metrics_paths(task_type, reviewed, fold_number=None, file_type_extension=None):
     """
     Get paths to overall score metrics files computed from results.
     
@@ -543,6 +560,10 @@ def get_score_metrics_paths(task_type, reviewed, file_type_extension=None):
 
     results_root_folder_path = get_global_info()['results_root_folder_path']
 
+    if fold_number != None:
+        results_root_folder_path = os.path.join(results_root_folder_path, 'score_metrics_folds')
+        os.makedirs(results_root_folder_path, exist_ok=True)       
+
     
     precision_score_path = os.path.join(results_root_folder_path, f'{task_type}_precision_scores')
     sensitivity_score_path = os.path.join(results_root_folder_path, f'{task_type}_sensitivity_scores')
@@ -554,6 +575,13 @@ def get_score_metrics_paths(task_type, reviewed, file_type_extension=None):
         sensitivity_score_path = sensitivity_score_path + '_reviewed'
         f1_score_path = f1_score_path + '_reviewed'
         weighted_f1_score_path = weighted_f1_score_path + '_reviewed'
+
+    if fold_number != None:
+        precision_score_path = precision_score_path + '_folds'
+        sensitivity_score_path = sensitivity_score_path + '_folds'
+        f1_score_path = f1_score_path + '_folds'
+        weighted_f1_score_path = weighted_f1_score_path + '_folds'
+
     if file_type_extension != None:
         precision_score_path = precision_score_path + '.' + file_type_extension
         sensitivity_score_path = sensitivity_score_path + '.' + file_type_extension
