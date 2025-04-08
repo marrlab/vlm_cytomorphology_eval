@@ -25,8 +25,8 @@ def get_global_info():
     available_datasets = ['AML_Matek', 'Bone_Marrow_Cyto', 'WBCAtt', 'Acevedo', 'HiCervix', 'MLL23']
     available_task_types = ['0shot_classification','1shot_classification', 'explainability', 'nonstructured']
     available_model_families = ['gemini', 'gpt', 'llama', 'deepseek']
-    available_models = ['gemini-2.0-flash-exp', 'gpt-4o', 'llama-3.2-multimodal-11B', 'deepseek-vl2-tiny', 'deepseek-vl2-small',
-                        'medflamingo',  'llavamed', 'conch',
+    available_models = ['gemini-2.0-flash-exp', 'gpt-4o', 'llama-3.2-multimodal-11B', 'Llama-4-Scout-17B-16E', 'Llama-4-Scout-17B-16E-Instruct', 
+                        'deepseek-vl2-tiny', 'deepseek-vl2-small', 'medflamingo',  'llavamed', 'conch',
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-1:AwdygYO3',
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-5:Awe2yBGI',
                         'ft:gpt-4o-2024-08-06:marrlab-helmholtz-munich:acevedo-n-10:AweEXbUp',
