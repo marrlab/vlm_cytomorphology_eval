@@ -1,7 +1,8 @@
 import requests
 import torch
 from PIL import Image
-from transformers import MllamaForConditionalGeneration, AutoProcessor
+from transformers import MllamaForConditionalGeneration, Llama4ForConditionalGeneration, AutoProcessor
+
 
 def load_llama_model(vlm_name='llama-3.2-multimodal-11B'):
     if vlm_name == 'llama-3.2-multimodal-11B':
@@ -11,16 +12,34 @@ def load_llama_model(vlm_name='llama-3.2-multimodal-11B'):
     elif vlm_name == 'llama-3.2-multimodal-90B':
         model_path = "/lustre/groups/labs/marr/qscd01/workspace/llama_multimodal_models/llama-3.2-multimodal-90B/llama-3.2-90B-model"
         processor_path = "/lustre/groups/labs/marr/qscd01/workspace/llama_multimodal_models/llama-3.2-multimodal-90B/llama-3.2-90B-processor"
+
+    elif vlm_name == 'Llama-4-Scout-17B-16E':
+        model_path = "/lustre/groups/labs/marr/qscd01/workspace/llama_multimodal_models/Llama-4-Scout-17B-16E"
+        processor_path = "/lustre/groups/labs/marr/qscd01/workspace/llama_multimodal_models/Llama-4-Scout-17B-16E/tokenizer.model"
+
+    elif vlm_name == 'Llama-4-Scout-17B-16E-Instruct':
+        model_path = "/lustre/groups/labs/marr/qscd01/workspace/llama_multimodal_models/Llama-4-Scout-17B-16E-Instruct"
+        processor_path = "/lustre/groups/labs/marr/qscd01/workspace/llama_multimodal_models/Llama-4-Scout-17B-16E-Instruct/tokenizer.model"
     else:
         raise ValueError(f"Model {vlm_name} not supported")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = MllamaForConditionalGeneration.from_pretrained(
-        model_path,
-        torch_dtype=torch.bfloat16,
-        device_map="auto"
-    )
+    if 'llama-3.2' in vlm_name: 
+        model = MllamaForConditionalGeneration.from_pretrained(
+            model_path,
+            torch_dtype=torch.bfloat16,
+            device_map="auto"
+        )
+    elif 'Llama-4' in vlm_name:
+        model = Llama4ForConditionalGeneration.from_pretrained(
+            model_path,
+            attn_implementation="flex_attention",
+            device_map="auto",
+            torch_dtype=torch.bfloat16,
+        )
+    else:
+        raise ValueError(f"Model {vlm_name} not supported")
 
     model.tie_weights()
 
