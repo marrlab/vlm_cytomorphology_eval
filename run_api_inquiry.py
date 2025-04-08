@@ -403,7 +403,7 @@ def run_api_review(vlm_name: str, dataset_name: str, task_type: str, **kwargs):
         # Get review prompt text for this category
         prompt_text = prompt[category]
         
-        if 'llama' in review_model:
+        if ('llama' in review_model) or ('Llama' in review_model):
             prompt_text = prompt_text + "\n Please write a short answer (only the chosen class and nothing else)!"
         
         for i, row in original_answers_df.iterrows():
@@ -505,7 +505,7 @@ def run_api_explainability_review(vlm_name: str, dataset_name: str, **kwargs):
                 # Get original answer for this category
                 original_answer = row[original_answers_column]
 
-                if 'llama' in vlm_name:
+                if ('llama' in vlm_name) or ('Llama' in vlm_name):
                     # For Llama models, take just the last line as the predicted label
                     # predicted_label = original_answer.strip().split('\n')[-1].strip()
                     # explanation = '\n'.join(original_answer.strip().split('\n')[:-1])
@@ -565,7 +565,7 @@ def run_api_explainability_review(vlm_name: str, dataset_name: str, **kwargs):
             original_answer = row[original_answers_column]
 
             # Split original answer into first line (predicted label) and rest of explanation
-            if 'llama' in vlm_name:
+            if ('llama' in vlm_name) or ('Llama' in vlm_name):
                 # For Llama models, take just the last line as the predicted label
                 # predicted_label = original_answer.strip().split('\n')[-1].strip()
                 # explanation = '\n'.join(original_answer.strip().split('\n')[:-1])
