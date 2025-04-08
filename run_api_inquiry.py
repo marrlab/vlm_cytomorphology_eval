@@ -63,7 +63,7 @@ class ModelImporter:
             self.api_text_inquiry = gemini_api_text_inquiry
             self.api_multiimage_inquiry = gemini_multiimage_api_visual_inquiry
             self.sleep_time = 5 
-        elif 'llama' in self.vlm_name:
+        elif ('llama' in self.vlm_name) or ('Llama' in self.vlm_name):
             from vlm_models.llama_api import load_llama_model, llama_api_visual_inquiry, llama_api_text_inquiry, llama_multiimage_api_visual_inquiry
             model, processor = load_llama_model(self.vlm_name)
             self.kwargs = {'model': model, 'processor': processor, 'max_new_tokens': 20000}
