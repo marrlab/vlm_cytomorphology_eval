@@ -522,7 +522,10 @@ def get_prompt(dataset_name: str, task_type: str, reviewed=False):
             elif reviewed==True:
                 return prompt_Acevedo_0shot_classification_review
         elif task_type == 'nonstructured':
-            return prompt_Acevedo_nonstructured
+            if reviewed==False:
+                return prompt_Acevedo_nonstructured
+            elif reviewed==True:
+                return prompt_Acevedo_0shot_classification_review
         elif task_type == 'explainability':
             if reviewed==False:
                 return prompt_Acevedo_explainability

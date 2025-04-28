@@ -127,7 +127,7 @@ if __name__ == '__main__':
         for dataset_name in global_info['available_datasets']:
             # for vlm_family in global_info['available_model_families']:
             #     vlm_name = global_info['recommended_models'][vlm_family]
-            for vlm_name in  global_info['available_models']:            
+            for vlm_name in ['biomedclip']: # global_info['available_models']:            
                 for reviewed in [True, False]:
                     try:
                         split_answers_into_folds(vlm_name, dataset_name, task_type, reviewed, how_many_folds)
