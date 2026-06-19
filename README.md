@@ -1,201 +1,215 @@
-# Evaluation of VLM models on cytology tasks and datasets
+# VLM Cytomorphology Eval
 
-This is a repository for automated evaluation of VLM models on cytology tasks and datasets.
+Automated evaluation framework for vision-language models (VLMs) on cytology tasks and datasets.
 
-**Important: Read the entire README before you start working on the project, using and modifying the code!**
+## Repository layout
 
-**If you are developing the code, inform the whole project group in Slack, what you intend to change. Ask Ivan for permission to change the logic of the code or the folder structure and naming conventions.**
+```
+.
+├── src/vlm_cytomorphology_eval/
+│   ├── config/             # dataset paths, naming conventions
+│   ├── prompts/            # task-specific prompts per dataset
+│   ├── models/             # API wrappers (GPT-4o, Gemini, Llama, DeepSeek, LLaVA-Med, MedFlamingo)
+│   ├── data/               # dataset preparation and fold splitting
+│   ├── inference/          # main entry point for VLM inquiries
+│   ├── finetuning/         # DINO / Llama fine-tuning
+│   ├── evaluation/         # answer review pipelines
+│   ├── features/           # feature extraction
+│   ├── visualization/      # confusion matrices, explainability plots
+│   ├── expert_review/      # selecting images for human review
+│   └── utils/
+├── notebooks/              # BiomedCLIP, CONCH zero-shot experiments
+├── scripts/                # SLURM / shell launchers
+├── tests/
+├── requirements.txt
+├── pyproject.toml
+├── .env.example
+└── LICENSE
+```
 
-**If you have any questions, ask Ivan or someone else in the project team.**
+## Installation
 
-**Our project directory on the cluster is "you know where"/qscd01/projects/cytology_vlm_eval**
-If you work on the cluster, use this directory. If you work locally, copy the datasets from this folder on the cluster to your computer first. If you are generating a new data set, make sure that you generate it on the cluster or that you copy it from your local machine after generating it. This will ensure that we are all working with the same randomly sampled subsets of data sets and that we are collecting all the results in the same folder with same naming convention.
+We recommend **conda** for this project because two of the supported models pin
+incompatible CUDA / PyTorch / `transformers` versions and must live in their
+own environments. Plain `venv` works only for the commercial-API-only path
+(GPT-4o, Gemini); it cannot manage per-env CUDA toolkits.
 
+You will typically end up with three environments:
 
-## Contents
+| Env | Python | Purpose |
+|---|---|---|
+| `vlm_eval`  | 3.10 | Default — commercial APIs, Llama, fine-tuning, plotting, notebooks |
+| `llavamed`  | 3.10 | LLaVA-Med only (pins older `transformers`) |
+| `deepseek`  | 3.9  | DeepSeek-VL2 only (requires CUDA 11.8 + PyTorch 2.0.1) |
 
-- dataset_info_and_paths.py: contains functions that return paths to datasets, results folders, etc. This file defines the entire folder structure of the project and naming conventions. All the file names have to be defined here in order to avoid conflicts. In other files, you are not allowed to define any names - you are only allowed to call get_..._path functions from here.
-- prepare_dataset.py: contains functions that samples a smaller subset of a large data set for the VLM evaluation. Use this for every new dataset that you're adding. Automatically creates also label csv files. Potential abbreviation_dictionary files have to be created manually.
-- prompts.py: contains a function that returns the suitable prompt for the chosen task
-- run_api_inquiry.py: contains function that runs the VLM models API inquiries for different tasks. Also contains a function that runs API enquiry to review the VLM models answers
-- clean_llama_answers.py: contains function that cleans the llama answers. They come out weirdly structured and you need to run this function to clean them up.
-- plot_conf_mat.py: contains function that plots the confusion matrix and generates a report
+### Default environment (`vlm_eval`)
 
-Subfolder vlm_models contains the VLM models API inquiry codes for each model.
+```bash
+git clone https://github.com/<your-org>/vlm_cytomorphology_eval.git
+cd vlm_cytomorphology_eval
 
-## Generates the following folder structure in root_folder_path (defined in dataset_info_and_paths.py):
+conda create -n vlm_eval python=3.10 -y
+conda activate vlm_eval
 
-- root_folder    
-    - Datasets
-        - dataset_name
-            
-            dataset_name_abbreviation_dictionary.csv
+pip install -e .
+```
 
-            - train
+This covers GPT-4o, Gemini, Llama, BiomedCLIP, CONCH, fine-tuning (DINO),
+plotting, and all data-preparation scripts.
 
-                dataset_name_train_labels.csv
+### Lightweight alternative (API models only, no GPU)
 
-                dataset_name_train_labels.xlsx            
-                ...
+If you only need the commercial APIs and don't want conda:
 
-                images
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e .
+```
 
-                ...                
-            - val                
-                ...
-            - test
-                ...
-            
-    - Results
-        overview results across all datasets and models
-        - dataset_name
-            - answers
-                answers provided by VLMs
-            - confusion_matrices
-                confusion matrices for each model
-    - Plots  
-        overview report plots across all datasets and models
-        - dataset_name
-            dataset specific plots
+### LLaVA-Med and DeepSeek-VL2
 
-## Requirements
+Both require dedicated conda environments installed from source — see the
+**Setting up LLaVA-Med** and **Setting up DeepSeek VL2** sections below.
 
-See requirements.txt
+### Setting up LLaVA-Med
 
-If by chance any of the requirements are missing in the file, add them please and inform Ivan.
+LLaVA-Med must be installed from the official Microsoft repository. We recommend a separate conda env because LLaVA-Med pins older versions of `transformers` and `torch`.
+
+```bash
+conda create -n llavamed python=3.10 -y
+conda activate llavamed
+
+git clone https://github.com/microsoft/LLaVA-Med.git
+cd LLaVA-Med
+pip install -e .
+```
+
+Pre-trained weights (e.g. `llava-med-v1.5-mistral-7b`) are pulled from HuggingFace at runtime — make sure `HF_TOKEN` is set if the checkpoint is gated.
+
+After installing LLaVA-Med, install this repo's requirements into the same env:
+
+```bash
+cd /path/to/vlm_cytomorphology_eval
+pip install -e .
+```
+
+### Setting up DeepSeek VL2
+
+DeepSeek VL2 requires CUDA 11.8 and PyTorch 2.0.1, so use a dedicated conda env.
+
+```bash
+# Check available CUDA versions
+ls /usr/local/ | grep cuda
+
+# Activate CUDA 11.8 (adjust paths for your system)
+export CUDA_HOME=/usr/local/cuda-11.8
+export PATH=/usr/local/cuda-11.8/bin:$PATH
+export LD_LIBRARY_PATH=/usr/local/cuda-11.8/lib64:$LD_LIBRARY_PATH
+nvcc --version
+
+# Create and activate a Python 3.9 env
+conda create -n deepseek python=3.9 -y
+conda activate deepseek
+
+# Install DeepSeek-VL2 from source
+git clone https://github.com/deepseek-ai/DeepSeek-VL2.git
+cd DeepSeek-VL2
+pip install -e .
+
+# DeepSeek's requirements omit a few packages this repo needs:
+pip install numpy==1.26.4 pandas==1.5.3 openpyxl==3.1.2
+
+# Install this repo into the same env
+cd /path/to/vlm_cytomorphology_eval
+pip install -e .
+```
+
+DeepSeek VL2 only runs on an A100 with 80 GB memory.
+
+### Setting up MedFlamingo (optional)
+
+MedFlamingo uses `open_flamingo` and requires the LLaMA-7B base weights. Follow the [med-flamingo](https://github.com/snap-stanford/med-flamingo) repo's setup.
+
+## Configuration
+
+Copy `.env.example` to `.env` and fill in your API keys:
+
+```bash
+cp .env.example .env
+```
+
+| Variable | Used for |
+|----------|----------|
+| `OPENAI_API_KEY` | GPT-4o inference and fine-tuning |
+| `GEMINI_API_KEY` | Gemini inference |
+| `HF_TOKEN` | Downloading gated HuggingFace checkpoints |
+| `VLM_ROOT_FOLDER_PATH` | Override default data/results root |
+
+> **Important:** The dataset and results paths inside `src/vlm_cytomorphology_eval/config/dataset_info_and_paths.py` are currently hard-coded to internal cluster locations (`/lustre/...`) and contributor home directories. Edit `LOCAL_ROOT_FOLDER_PATH` and the per-dataset paths to match your setup before running.
 
 ## Usage
 
-### Running the API call of a model
+### Running a VLM evaluation
 
-Run the API call for a dataset, task and model by running run_api_inquiry.py and parsing the arguments.
-
-**Important: Before running the comercial VLMs, you will need to register and get an API key.**
-Before running run_api_inquiry.py in the terminal, you'll need to export the API keys. For example:
+```bash
+python -m vlm_cytomorphology_eval.inference.run_api_inquiry \
+    --dataset_name <name> --task_type <task> --vlm_name <model>
 ```
-export GEMINI_API_KEY = 'your_gemini_api_key'
-export OPENAI_API_KEY = 'your_openai_api_key'
+
+Make sure the relevant API key is exported (or present in your `.env`).
+
+### Generating reports
+
+```bash
+python -m vlm_cytomorphology_eval.visualization.plot_conf_mat
 ```
-Don't share your key with anyone unless you would like them to burn your money. :) 
 
-### Reporting results
-
-To compute and plot confusion mattrices for all the models and datasets run plot_conf_mat.py. This also collects all the results and plots reports. 
-If you want to plot only for a specific model or dataset, call individual funstions from plot_conf_mat.py.
+This computes confusion matrices and aggregate metrics across all configured models and datasets.
 
 ### Adding a new dataset
 
-To add a new dataset for evaluation:
+1. Add the dataset entry to `get_dataset_info` in `src/vlm_cytomorphology_eval/config/dataset_info_and_paths.py`.
+2. Add the dataset-specific prompts in `src/vlm_cytomorphology_eval/prompts/prompts.py`.
+3. Build the evaluation subset:
 
-1. Add dataset info to `dataset_info_and_paths.py`:
-    - Add the dataset name to the available_datasets list in the get_global_info function
-    - Follow the parameter descriptions and the pattern of previous datasets to the following info to the get_dataset_info function:
-        - paths to original dataset and annotations
-        - column names for subset sampling and image paths
-        - which classes/labels to include
-        - any dataset-specific configuration
-        - ...
-
-2. Create prompts in `prompts.py`:
-   - Add dataset-specific prompts for all the tasks
-   - Ensure prompts match the dataset's labels
-
-3. Generate the evaluation subset:
-   - Choose n_per_label - the number of samples per class
-   - Run: `python prepare_dataset.py --dataset_name <name> --n_per_label <n>`
-   This will automatically choose a subset of the entire dataset such that all the classes are equally represented. It will copy it to the vlm_eval_subset_folder_path and create a labels file. You should run this function only once for a new dataset. The function will not overwrite the existing subset. If you want to change the subset, you need to delete the existing subset folder and run the function again. If the subset was created by someone else, you need to ask everyone in the project team for a permission to delete it.
+   ```bash
+   python -m vlm_cytomorphology_eval.data.prepare_dataset \
+       --dataset_name <name> --n_per_label <n>
+   ```
 
 ### Adding a new VLM model family
 
-To add a new VLM model family for evaluation:
-
-1. Add the model family to available_model_families list. Add the name of the most recommended model within the family to the recommended_models dictionary in the get_global_info function in dataset_info_and_paths.py
-
-2. Add the model to the get_review_model function in dataset_info_and_paths.py - specify which model to use for reviewing the 
-answers generated by the VLM model you're adding. If you believe that the model is strong enough, use itself, otherwise use gpt-4o.
-
-3. Add a new api inquiry code file to the vlm_models folder on github. Call it <<model_family_name>>_api.py.
-It needs to contain the following functions:
-    - <<model_family_name>>_api_visual_inquiry. Takes image_path, prompt_text, vlm_name as inputs and returns the answer and token usage.This function is used to pass a single image and prompt to the VLM model.
-    ...
-    - <<model_family_name>>_api_task for every task type that requires more than a single image. It needs to take suitable inputs and return the answer and token usage. See other models for examples.
-    ...
-    - <<model_family_name>>_api_text_inquiry. Takes prompt_text, vlm_name as inputs and returns the answer and token usage. This function is used to review the answers generated by the VLM models.
-
-See gpt_api.py for an example.
-
-4. Add the model to the import_model function in run_api_inquiry.py. Specify possible model particularities in kwargs.
+1. Add the family name to `available_model_families` and choose a representative model in `recommended_models` (both in `get_global_info`).
+2. Register the review model in `get_review_model`.
+3. Add a new `<family>_api.py` under `src/vlm_cytomorphology_eval/models/` exposing `<family>_api_visual_inquiry`, `<family>_api_text_inquiry`, and any task-specific functions (multi-image, etc.). See `gpt_api.py` for the simplest reference.
+4. Wire it into `import_model` in `src/vlm_cytomorphology_eval/inference/run_api_inquiry.py`.
 
 ### Adding a new task
 
-1. Add the task name to the available_task_types list in the get_global_info function in dataset_info_and_paths.py
+1. Append the task name to `available_task_types` in `get_global_info`.
+2. Add prompts for all datasets and for both reviewed and unreviewed cases in `prompts.py`.
+3. Implement `run_api_<task>` inside `run_api_inquiry.py`.
+4. Add any per-model task functions in the relevant model file under `models/`.
 
-2. Add the prompts for the task type for all datasets and for both reviewed and unreviewed cases to the prompts.py file.
+## Generated folder structure
 
-3. Write the function run_api_task_type for the task in run_api_inquiry.py.
+The pipeline assumes / creates the following layout under the configured root:
 
-4. Add potential new task-specific functions to the model files in the vlm_models folder.
-
-5. Add potential new task-specific functions to the import_model function in the run_api_inquiry.py file.
-
-### Setting up DeepSeek VL2
-Check Cuda versions available on the cluster
 ```
-ls /usr/local/ | grep cuda
-```
-The recommended version of Cuda for PyTorch 2.0.1, which is used by DeepSeek VL2 is Cuda 11.8. Activate Cuda 11.8:
-```
-export CUDA_HOME=/usr/local/cuda-11.8
-export PATH=/usr/local/cuda-11.8/bin:$PATH
-export LD_LIBRARY_PATH=/usr/local/cuda-11.8/lib64:$LD_LIBRARY_PATH
-```
-Verify that it's active:
-```
-nvcc --version
-```
-Create a conda environment:
-```
-conda create -n deepseek python=3.9 -y
-```
-Activate it:
-```
-conda activate deepseek
-```
-Navigate to the directory:
-```
-cd /lustre/groups/labs/marr/qscd01/projects/cytology_vlm_eval/DeepSeek-VL2
-```
-DeepSeek-VL2 is already cloned there. If it wasn't, you would have to run ```git clone https://github.com/deepseek-ai/DeepSeek-VL2.git```
-Install DeepSeek-VL2:
-```
-pip install -e .
-```
-In the DeepSeek requirements there are some packages missing to run in the vlm_eval package: numpy==1.26.4, pandas==1.5.3, openpyxl==3.1.2
-Alternatively you could install one of the environments (on top of python=3.9):
-```
-/lustre/groups/labs/marr/qscd01/projects/cytology_vlm_eval/deepseek_env.yaml
-/lustre/groups/labs/marr/qscd01/projects/cytology_vlm_eval/deepseek_env.txt 
-```
-and then run
-```
-pip install -e .
-```
-in the folder
-```
-/lustre/groups/labs/marr/qscd01/projects/cytology_vlm_eval/DeepSeek-VL2 
+<root>/
+├── Datasets/<dataset_name>/{train,val,test}/...
+├── Results/
+│   └── <dataset_name>/
+│       ├── answers/
+│       └── confusion_matrices/
+└── Plots/<dataset_name>/
 ```
 
-### Using DeepSeek
-Only works after you have installed it properly. Only works on A100 GPU with 80GB memory. 
+## License
 
-First run:
-```
-export CUDA_HOME=/usr/local/cuda-11.8
-export PATH=/usr/local/cuda-11.8/bin:$PATH
-export LD_LIBRARY_PATH=/usr/local/cuda-11.8/lib64:$LD_LIBRARY_PATH
-```
-Then:
-```
-conda activate deepseek
-```
-Then keep your fingers crossed.
+MIT — see [LICENSE](LICENSE).
+
+## Citation
+
+If you use this code, please cite the associated publication (link will be added on release).

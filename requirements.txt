@@ -1,11 +1,33 @@
-matplotlib==3.10.0
+# Core scientific stack
 numpy==2.2.1
-openai==1.59.4
 pandas==2.2.3
+scipy
+scikit-learn
+matplotlib==3.10.0
+seaborn
 Pillow==11.1.0
-protobuf==5.29.2
-Requests==2.32.3
+openpyxl
+tqdm
+
+# Deep learning
 torch==2.5.1
 transformers==4.47.0
+accelerate
+safetensors
+protobuf==5.29.2
+
+# CLIP-style models (for biomedclip / conch notebooks)
+open_clip_torch
+
+# Commercial VLM APIs
+openai==1.59.4
 google-generativeai==0.8.3
-openpyx
+
+# Networking
+Requests==2.32.3
+
+# Notes:
+# - LLaVA-Med must be installed from source. See README "Setting up LLaVA-Med".
+# - DeepSeek-VL2 must be installed from source. See README "Setting up DeepSeek VL2".
+# - MedFlamingo (open_flamingo) must be installed separately if you want to run that model.
+# - CONCH is gated; request access on HuggingFace before using conch_experiment.ipynb.
